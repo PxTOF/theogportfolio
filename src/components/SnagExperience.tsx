@@ -71,7 +71,7 @@ class WebGLBoundary extends Component<{ children: ReactNode }, { failed: boolean
 
 // ─── New Preloader: star-particles converge into SNAG, tap/Enter to dismiss ──
 
-function Preloader({ onDone }: { onDone: () => void }) {
+function Preloader({ onDone }: { onDone: (skipped?: boolean) => void }) {
   const canvasRef  = useRef<HTMLCanvasElement>(null);
   const [progress, setProgress] = useState(0);
   const [phase, setPhase]       = useState<"forming" | "ready" | "exiting">("forming");
@@ -79,8 +79,17 @@ function Preloader({ onDone }: { onDone: () => void }) {
   const phaseRef = useRef<"forming" | "ready" | "exiting">("forming");
 
   useEffect(() => {
-    // Don't let the browser restore a previous scroll position behind the
-    // preloader — the site must always reveal at the hero (top).
+    // Already played the intro this session (reload / back / re-entry)? Skip it,
+    // reveal the site immediately, and let the browser restore scroll position.
+    let seen = false;
+    try { seen = sessionStorage.getItem("snag:intro") === "1"; } catch { /* ignore */ }
+    if (seen) {
+      if ("scrollRestoration" in history) history.scrollRestoration = "auto";
+      // Deferred to avoid a synchronous setState cascade inside the effect.
+      const skip = requestAnimationFrame(() => { onDone(true); setVisible(false); });
+      return () => cancelAnimationFrame(skip);
+    }
+    // First visit this session: reveal at the hero (top) behind the preloader.
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
     window.scrollTo(0, 0);
     document.body.style.overflow = "hidden";
@@ -241,7 +250,7 @@ function Preloader({ onDone }: { onDone: () => void }) {
       cancelAnimationFrame(raf);
       document.body.style.overflow = "";
     };
-  }, []);
+  }, [onDone]);
 
   // Tap / click / keyboard to enter. Wheel scroll is intentionally ignored so
   // the reveal starts cleanly at the hero instead of carrying scroll momentum.
@@ -252,12 +261,16 @@ function Preloader({ onDone }: { onDone: () => void }) {
       if (phaseRef.current !== "ready") return;
       phaseRef.current = "exiting";
       setPhase("exiting");
+      // Remember the intro played so reloads / back don't replay it this session,
+      // and re-enable native scroll restoration for those subsequent loads.
+      try { sessionStorage.setItem("snag:intro", "1"); } catch { /* ignore */ }
+      if ("scrollRestoration" in history) history.scrollRestoration = "auto";
       // Pin to the hero so the reveal always starts at the top (the dismiss
       // wheel/scroll must not carry the page down into another section).
       window.scrollTo(0, 0);
       // Reveal the site under the starfield, then let the loader collapse into
       // the same cosmic language as the hero instead of sliding away.
-      setTimeout(onDone, 180);
+      setTimeout(() => onDone(false), 180);
       setTimeout(() => setVisible(false), 1180);
     };
 
@@ -1022,8 +1035,14 @@ export default function SnagExperience() {
   const appRef  = useRef<HTMLDivElement>(null);
   const [webglOn, setWebglOn]   = useState(false);
   const [siteReady, setSiteReady] = useState(false);
+  // Set when the preloader was skipped (already seen this session) so we keep the
+  // browser's restored scroll position instead of forcing the hero top.
+  const skippedIntroRef = useRef(false);
 
-  const handlePreloaderDone = useCallback(() => setSiteReady(true), []);
+  const handlePreloaderDone = useCallback((skipped = false) => {
+    skippedIntroRef.current = skipped;
+    setSiteReady(true);
+  }, []);
 
   // WebGL capability check (runs immediately)
   useEffect(() => {
@@ -1101,11 +1120,12 @@ export default function SnagExperience() {
     const isMobile     = window.matchMedia("(max-width: 900px)").matches;
     ScrollTrigger.config({ ignoreMobileResize: true });
 
-    // Start at the hero — guard against any restored/carried scroll position.
-    window.scrollTo(0, 0);
+    // Fresh intro → start at the hero; skipped intro (reload/back) → keep the
+    // scroll position the browser restored.
+    if (!skippedIntroRef.current) window.scrollTo(0, 0);
     // Native scroll on touch is smoother than Lenis' rAF-driven smoothing.
     const lenis = (reduceMotion || isMobile) ? null : new Lenis({ lerp: 0.085, smoothWheel: true });
-    lenis?.scrollTo(0, { immediate: true });
+    if (!skippedIntroRef.current) lenis?.scrollTo(0, { immediate: true });
     const raf   = (time: number) => lenis?.raf(time * 1000);
 
     if (lenis) {
