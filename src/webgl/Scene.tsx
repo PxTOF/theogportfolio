@@ -199,7 +199,7 @@ function HeroParticleLogo({ maxParticles = 4200 }: { maxParticles?: number }) {
       cancelled = true;
       built?.geometry.dispose();
     };
-  }, []);
+  }, [maxParticles]);
 
   useDomSync(".hero-view", group, { scaleMode: "width", base: 1, pad: 0.8 });
 

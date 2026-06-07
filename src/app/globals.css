@@ -17,7 +17,7 @@
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { scroll-behavior: auto; background: var(--black-deep); }
+html { scroll-behavior: auto; background: var(--black-deep); overflow-x: clip; }
 
 body {
   min-height: 100vh;
@@ -1284,6 +1284,9 @@ textarea.contact-input { resize: vertical; min-height: 84px; }
   .model-title h2, .work-intro h2 { font-size: clamp(3.8rem, 17vw, 6rem); }
   /* Contact heading is the longest copy — keep it bold but readable, not screen-eating. */
   .footer-punch h2 { font-size: clamp(2.5rem, 11vw, 3.8rem); line-height: 0.92; }
+  /* Footer copy must wrap within the viewport, not clip on the right. */
+  .footer-meta { font-size: 0.68rem; letter-spacing: 0.02em; max-width: 100%; }
+  .footer-links, .footer-loc, .footer-credits { max-width: 100%; overflow-wrap: anywhere; }
 }
 
 @media (prefers-reduced-motion: reduce) {

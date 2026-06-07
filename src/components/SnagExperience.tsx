@@ -504,7 +504,7 @@ function ProjectCard({ project, index }: { project: Project; index: string }) {
           className="project-card-media"
           src={project.video}
           poster={project.poster}
-          muted={muted} autoPlay loop playsInline preload="metadata" disablePictureInPicture
+          muted={muted} loop playsInline preload="none" disablePictureInPicture
           aria-label={`${project.title} reel`}
         />
       ) : (
@@ -620,9 +620,9 @@ function Hero() {
       <div className="hero-inner">
         <p className="hero-kicker">A new-age creative &amp; content studio — Gurgaon</p>
         <div className="hero-view" aria-hidden="true" />
-        <p className="hero-tagline">
+        <h1 className="hero-tagline">
           We don&apos;t just make content. <em>We make people care.</em>
-        </p>
+        </h1>
       </div>
       <aside className="hero-card">
         <p className="hero-card-eyebrow">Studio · Gurgaon</p>
@@ -691,7 +691,7 @@ function ProofSlides() {
     <section ref={ref} className="proof-slides" id="proof-gallery" aria-label="Attention proof">
       {proofSlides.map((slide, i) => (
         <article className="proof-slide" key={slide.title} data-idx={i} style={{ opacity: i === 0 ? 1 : 0 }}>
-          <video src={slide.media} poster={slide.poster} muted loop playsInline preload="metadata" aria-hidden="true" />
+          <video src={slide.media} poster={slide.poster} muted loop playsInline preload="none" aria-hidden="true" />
           <div className="proof-vignette" aria-hidden="true" />
           <div className="proof-copy">
             <p>{slide.eyebrow}</p>
