@@ -438,12 +438,20 @@ function ProjectCard({ project, index }: { project: Project; index: string }) {
     video.muted = muted;
     video.volume = muted ? 0 : 0.82;
 
+    const tryPlay = () => {
+      // Mobile blocks autoplay unless the element is reliably muted — retry muted
+      // if the first attempt is rejected.
+      video.play().catch(() => {
+        video.muted = true;
+        video.play().catch(() => {});
+      });
+    };
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting && playing) video.play().catch(() => {});
+        if (entry.isIntersecting && playing) tryPlay();
         else video.pause();
       },
-      { threshold: 0.35 }
+      { threshold: 0.25 }
     );
 
     observer.observe(video);
@@ -483,7 +491,7 @@ function ProjectCard({ project, index }: { project: Project; index: string }) {
           className="project-card-media"
           src={project.video}
           poster={project.poster}
-          muted={muted} autoPlay loop playsInline preload="metadata"
+          muted={muted} autoPlay loop playsInline preload="metadata" disablePictureInPicture
           aria-label={`${project.title} reel`}
         />
       ) : (
@@ -653,11 +661,17 @@ function ProofSlides() {
     const sec = ref.current;
     if (!sec) return;
     const vids = Array.from(sec.querySelectorAll("video"));
+    const play = (v: HTMLVideoElement) => v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
+    // Per-video so the mobile stacked layout only decodes the on-screen reel
+    // (decoding all 3 at once was a big cause of mobile jank).
     const io = new IntersectionObserver(
-      ([e]) => vids.forEach((v) => (e.isIntersecting ? v.play().catch(() => {}) : v.pause())),
-      { threshold: 0.05 }
+      (entries) => entries.forEach((e) => {
+        const v = e.target as HTMLVideoElement;
+        if (e.isIntersecting) play(v); else v.pause();
+      }),
+      { threshold: 0.5 }
     );
-    io.observe(sec);
+    vids.forEach((v) => io.observe(v));
     return () => io.disconnect();
   }, []);
   return (
@@ -1014,9 +1028,6 @@ export default function SnagExperience() {
   // WebGL capability check (runs immediately)
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    // The WebGL nebula + bloom/chromatic post-processing is the #1 cause of
-    // mobile jank — skip it on phones/tablets; the CSS cosmos covers the hero.
-    const lowPower = window.matchMedia("(max-width: 900px), (pointer: coarse)").matches;
     let supported = false;
     try {
       const c = document.createElement("canvas");
@@ -1026,7 +1037,7 @@ export default function SnagExperience() {
       // hard cap on live WebGL contexts (which can starve the real Canvas).
       test?.getExtension("WEBGL_lose_context")?.loseContext();
     } catch { supported = false; }
-    const frame = window.requestAnimationFrame(() => setWebglOn(supported && !reduce && !lowPower));
+    const frame = window.requestAnimationFrame(() => setWebglOn(supported && !reduce));
     return () => window.cancelAnimationFrame(frame);
   }, []);
 
@@ -1135,7 +1146,7 @@ export default function SnagExperience() {
       const proofGallery  = document.getElementById("proof-gallery");
       const proofSlideEls = proofGallery?.querySelectorAll<HTMLElement>(".proof-slide");
       const total         = proofSlideEls?.length ?? 0;
-      if (proofGallery && proofSlideEls && total > 0) {
+      if (proofGallery && proofSlideEls && total > 0 && !isMobile) {
         let current = 0;
         proofSlideEls.forEach((s, i) => gsap.set(s, { autoAlpha: i === 0 ? 1 : 0, clipPath: "inset(0% 0% 0% 0%)" }));
         const revealCopy = (slide: HTMLElement) => {

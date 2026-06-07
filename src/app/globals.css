@@ -1270,14 +1270,12 @@ textarea.contact-input { resize: vertical; min-height: 84px; }
   .project-rail { height: auto; padding-bottom: 1.4rem; }
   .project-card { height: 80svh; scroll-snap-align: start; }
   .project-controls { opacity: 1; top: 1rem; }
-  .signal-wave { display: none; }
-  .attention-glow { display: none; }
-  /* Mobile perf: drop GPU-heavy blurs + ambient animations for smooth scroll */
-  * { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
-  .cosmos-neb { filter: none; }
-  .cosmos::before, .cosmos::after { display: none; }   /* drifting god-rays */
-  .cinema::before, .cinema::after { display: none; }   /* edge bloom + light-leak */
-  .grain { animation: none; }
+  .signal-wave { opacity: 0.5; }
+  .attention-glow { display: none; }   /* cursor-follow glow — no cursor on touch */
+  .grain { animation: none; }          /* static grain — still visible, no repaint */
+  /* Proof reels: native vertical stack instead of the pinned scroll-scrub */
+  .proof-slides { height: auto; overflow: visible; }
+  .proof-slide { position: relative; inset: auto; height: 100svh; opacity: 1 !important; }
 }
 
 @media (max-width: 540px) {

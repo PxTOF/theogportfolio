@@ -21,7 +21,7 @@ type LogoData = { geometry: THREE.BufferGeometry; origPos: Float32Array; half: {
 const _ray = new THREE.Vector3();
 const _hit = new THREE.Vector3();
 
-function buildSnagGeometry(): LogoData | null {
+function buildSnagGeometry(maxParticles = 4200): LogoData | null {
   const Wc = 1024;
   const Hc = Math.round((Wc * SNAG_LOGO_VIEWBOX.h) / SNAG_LOGO_VIEWBOX.w);
   const canvas = document.createElement("canvas");
@@ -45,7 +45,7 @@ function buildSnagGeometry(): LogoData | null {
     const j = (Math.random() * (i + 1)) | 0;
     [pts[i], pts[j]] = [pts[j], pts[i]];
   }
-  const N = Math.min(4200, pts.length);
+  const N = Math.min(maxParticles, pts.length);
   const aspect = Hc / Wc;
 
   const positions = new Float32Array(N * 3);
@@ -161,7 +161,7 @@ const PARTICLE_FRAG = /* glsl */ `
   }
 `;
 
-function HeroParticleLogo() {
+function HeroParticleLogo({ maxParticles = 4200 }: { maxParticles?: number }) {
   const group     = useRef<THREE.Group>(null);
   const pointsRef = useRef<THREE.Points>(null);
 
@@ -188,7 +188,7 @@ function HeroParticleLogo() {
         await Promise.race([document.fonts.ready, new Promise<void>((r) => setTimeout(r, 800))]);
       } catch { /* ignore */ }
       if (cancelled) return;
-      built = buildSnagGeometry();
+      built = buildSnagGeometry(maxParticles);
       if (!built || cancelled) return;
       origPosRef.current  = built.origPos;
       halfSizeRef.current = built.half;
@@ -293,6 +293,13 @@ function HeroParticleLogo() {
 }
 
 export default function Scene({ eventSource }: { eventSource: RefObject<HTMLElement | null> }) {
+  // Lighter render on phones/tablets: lower DPR, fewer particles, no antialias,
+  // and skip the heavy bloom/chromatic post-processing — keeps the nebula +
+  // particle wordmark (the "life") without the GPU cost that caused the jank.
+  const [mobile] = useState(
+    () => typeof window !== "undefined" && window.matchMedia("(max-width: 900px), (pointer: coarse)").matches
+  );
+
   useEffect(() => {
     const t = window.setTimeout(() => window.dispatchEvent(new Event("resize")), 200);
     return () => window.clearTimeout(t);
@@ -303,18 +310,18 @@ export default function Scene({ eventSource }: { eventSource: RefObject<HTMLElem
       <Canvas
         eventSource={eventSource as RefObject<HTMLElement>}
         eventPrefix="client"
-        dpr={[1, 2]}
-        gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}
+        dpr={mobile ? [1, 1.5] : [1, 2]}
+        gl={{ antialias: !mobile, alpha: true, powerPreference: "high-performance" }}
         camera={{ position: [0, 0, 6], fov: 40 }}
         onCreated={(state) => state.setSize(window.innerWidth, window.innerHeight)}
       >
         <HeroBackground />
         <HeroParticles />
         <Suspense fallback={null}>
-          <HeroParticleLogo />
+          <HeroParticleLogo maxParticles={mobile ? 1800 : 4200} />
           <Preload all />
         </Suspense>
-        <Effects />
+        {!mobile && <Effects />}
       </Canvas>
     </div>
   );
