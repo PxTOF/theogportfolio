@@ -768,8 +768,11 @@ function LatestReel() {
   const [post, setPost] = useState<{ media: string; thumb?: string; permalink: string; isVideo: boolean } | null>(null);
 
   useEffect(() => {
-    const id = process.env.NEXT_PUBLIC_BEHOLD_FEED_ID;
-    if (!id) return; // no feed yet → graceful local fallback renders
+    // Public Behold feed id (same one in the widget embed) — hardcoded as a
+    // default so the card works on Vercel even without the env var set; the env
+    // var overrides it if present.
+    const id = process.env.NEXT_PUBLIC_BEHOLD_FEED_ID || "bDimAptWlG8fo0gknVwk";
+    if (!id) return;
     let alive = true;
     fetch(`https://feeds.behold.so/${id}?t=${Date.now()}`, { cache: "no-store" })
       .then((r) => r.json())
