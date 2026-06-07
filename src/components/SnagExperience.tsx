@@ -1014,6 +1014,9 @@ export default function SnagExperience() {
   // WebGL capability check (runs immediately)
   useEffect(() => {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // The WebGL nebula + bloom/chromatic post-processing is the #1 cause of
+    // mobile jank — skip it on phones/tablets; the CSS cosmos covers the hero.
+    const lowPower = window.matchMedia("(max-width: 900px), (pointer: coarse)").matches;
     let supported = false;
     try {
       const c = document.createElement("canvas");
@@ -1023,7 +1026,7 @@ export default function SnagExperience() {
       // hard cap on live WebGL contexts (which can starve the real Canvas).
       test?.getExtension("WEBGL_lose_context")?.loseContext();
     } catch { supported = false; }
-    const frame = window.requestAnimationFrame(() => setWebglOn(supported && !reduce));
+    const frame = window.requestAnimationFrame(() => setWebglOn(supported && !reduce && !lowPower));
     return () => window.cancelAnimationFrame(frame);
   }, []);
 
@@ -1089,7 +1092,8 @@ export default function SnagExperience() {
 
     // Start at the hero — guard against any restored/carried scroll position.
     window.scrollTo(0, 0);
-    const lenis = reduceMotion ? null : new Lenis({ lerp: 0.085, smoothWheel: true });
+    // Native scroll on touch is smoother than Lenis' rAF-driven smoothing.
+    const lenis = (reduceMotion || isMobile) ? null : new Lenis({ lerp: 0.085, smoothWheel: true });
     lenis?.scrollTo(0, { immediate: true });
     const raf   = (time: number) => lenis?.raf(time * 1000);
 
