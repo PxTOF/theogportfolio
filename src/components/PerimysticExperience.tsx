@@ -41,21 +41,15 @@ const proofSlides: ProofSlide[] = [
     metric: "Focus", value: "Creator partnerships" },
 ];
 
-// The authentic logo remains a supplied brand asset, never a CSS imitation.
-// Until the standalone source image is added, show a restrained text label.
-// Configure NEXT_PUBLIC_PERIMYSTIC_LOGO_SRC when the approved asset is uploaded.
+// Approved original logo supplied by the owner and committed as a real image.
 function LogoMark({ className = "" }: { className?: string }) {
-  const logoSrc = process.env.NEXT_PUBLIC_PERIMYSTIC_LOGO_SRC;
   return (
     <span className={`brand-artwork ${className}`}>
-      {logoSrc ? (
-        <Image src={logoSrc} alt="Perimystic Marketing Agency logo" width={960} height={720} priority unoptimized className="brand-artwork-image" />
-      ) : (
-        <span className="brand-artwork-placeholder">
-          <strong>Perimystic</strong>
-          <small>MARKETING AGENCY</small>
-        </span>
-      )}
+      <Image
+        src="/assets/branding/perimystic-logo.webp"
+        alt="Perimystic Marketing Agency — Insight, Strategy, Impact"
+        width={1080} height={1080} priority unoptimized className="brand-artwork-image"
+      />
     </span>
   );
 }
@@ -453,37 +447,6 @@ function SignalWave() {
   return <canvas ref={canvasRef} className="signal-wave" aria-hidden="true" />;
 }
 
-function Hero() {
-  return (
-    <section className="hero" id="intro">
-      <div className="hero-shade" aria-hidden="true" />
-      <div className="hero-border hero-border--top" aria-hidden="true" />
-      <div className="hero-border hero-border--bottom" aria-hidden="true" />
-      <div className="hero-corner hero-corner--left" aria-hidden="true">✺</div>
-      <div className="hero-corner hero-corner--right" aria-hidden="true">✺</div>
-      <div className="hero-inner">
-        <p className="hero-kicker">✦ Indian at heart · Creative by nature ✦</p>
-        <div className="hero-view" aria-hidden="true">
-          <LogoMark className="hero-brand-artwork" />
-        </div>
-        <h1 className="hero-tagline">
-          Good brands don&apos;t whisper. <em>They make a scene.</em>
-        </h1>
-        <a href="#contact" className="hero-action" data-cursor="view">Let&apos;s make some noise <ArrowRight size={18} /></a>
-      </div>
-      <aside className="hero-card">
-        <p className="hero-card-eyebrow">थोड़ा हटके / FULL POWER</p>
-        <div className="dashline" />
-        <p className="hero-card-body">Social. Creators. Campaigns. Made with character, not templates.</p>
-      </aside>
-      <div className="hero-scroll" aria-hidden="true">
-        <span className="hero-scroll-line" />
-        <span>Scroll</span>
-      </div>
-    </section>
-  );
-}
-
 function AttentionModel() {
   return (
     <section className="attention-model" id="features">
@@ -514,42 +477,103 @@ function AttentionModel() {
   );
 }
 
+
 function ProofSlides() {
   const ref = useRef<HTMLElement>(null);
-  // Only play these full-screen reels while the gallery is on screen.
+
   useEffect(() => {
     const sec = ref.current;
     if (!sec) return;
-    const vids = Array.from(sec.querySelectorAll("video"));
-    const play = (v: HTMLVideoElement) => v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
-    // Per-video so the mobile stacked layout only decodes the on-screen reel
-    // (decoding all 3 at once was a big cause of mobile jank).
-    const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => {
-        const v = e.target as HTMLVideoElement;
-        if (e.isIntersecting) play(v); else v.pause();
-      }),
-      { threshold: 0.5 }
-    );
-    vids.forEach((v) => io.observe(v));
-    return () => io.disconnect();
+    const vids = Array.from(sec.querySelectorAll<HTMLVideoElement>(".proof-slide video"));
+    const mobile = window.matchMedia("(max-width: 900px)").matches;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const play = (v: HTMLVideoElement) => {
+      if (reduceMotion || document.hidden) return;
+      v.muted = true;
+      v.play().catch(() => { /* Mobile autoplay can be declined */ });
+    };
+    const syncDesktop = () => {
+      if (mobile) return;
+      vids.forEach((v) => {
+        if (v.closest<HTMLElement>(".proof-slide")?.dataset.active === "true" &&
+            sec.getBoundingClientRect().bottom > 0 &&
+            sec.getBoundingClientRect().top < window.innerHeight) play(v);
+        else v.pause();
+      });
+    };
+    // On phones the slides become a native vertical stack; decode only a reel
+    // in view, rather than three layered full-screen videos at once.
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        const v = entry.target as HTMLVideoElement;
+        if (mobile) {
+          if (entry.isIntersecting && entry.intersectionRatio >= .45) play(v);
+          else v.pause();
+        } else {
+          syncDesktop();
+        }
+      }
+    }, { threshold: [0, .45, .8] });
+    vids.forEach(v => observer.observe(v));
+    const onSlideChange = () => syncDesktop();
+    const onVisibility = () => {
+      if (document.hidden) vids.forEach(v => v.pause());
+      else syncDesktop();
+    };
+    sec.addEventListener("perimystic:slide-change", onSlideChange);
+    document.addEventListener("visibilitychange", onVisibility);
+    syncDesktop();
+    return () => {
+      observer.disconnect();
+      sec.removeEventListener("perimystic:slide-change", onSlideChange);
+      document.removeEventListener("visibilitychange", onVisibility);
+      vids.forEach(v => v.pause());
+    };
   }, []);
+
   return (
-    <section ref={ref} className="proof-slides" id="proof-gallery" aria-label="Attention proof">
+    <section ref={ref} className="proof-slides cinematic-hero" id="proof-gallery"
+      aria-label="Perimystic creative marketing showcase">
+      <span id="intro" className="cinematic-top-anchor" aria-hidden="true" />
+      <nav className="cinematic-hero-nav" aria-label="Main navigation">
+        <a className="cinematic-brand" href="#intro" aria-label="Perimystic, back to top">
+          <Image src="/assets/branding/perimystic-crest.webp" alt="" width={80} height={64} priority unoptimized />
+          <span className="cinematic-brand-name">PERIMYSTIC <small>MARKETING AGENCY</small></span>
+        </a>
+        <div className="cinematic-nav-links">
+          <span className="cinematic-location">CHANDIGARH <i>◆</i> DELHI NCR</span>
+          <a href="#capabilities">WHAT WE DO</a>
+          <a className="cinematic-nav-cta" href="#contact">LET&apos;S TALK <ArrowRight size={15} /></a>
+        </div>
+      </nav>
       {proofSlides.map((slide, i) => (
-        <article className="proof-slide" key={slide.title} data-idx={i} style={{ opacity: i === 0 ? 1 : 0 }}>
-          <video src={slide.media} poster={slide.poster} muted loop playsInline preload="none" aria-hidden="true" />
+        <article className="proof-slide cinematic-slide" key={slide.title}
+          data-idx={i} data-active={i === 0 ? "true" : "false"}
+          style={{ opacity: i === 0 ? 1 : 0 }}>
+          <video src={slide.media} poster={slide.poster}
+            muted loop playsInline preload={i === 0 ? "metadata" : "none"}
+            disablePictureInPicture aria-hidden="true" />
           <div className="proof-vignette" aria-hidden="true" />
-          <div className="proof-copy">
-            <p>{slide.eyebrow}</p>
-            <h2>{slide.title}</h2>
+          <div className="cinematic-frame" aria-hidden="true" />
+          <div className="proof-copy cinematic-copy">
+            <p className="cinematic-eyebrow">{slide.eyebrow}</p>
+            {i === 0 ? (
+              <h1>GOOD BRANDS DON&apos;T WHISPER. <em>THEY MAKE A SCENE.</em></h1>
+            ) : (
+              <h2>{slide.title}</h2>
+            )}
             <span>{slide.copy}</span>
-          </div>
-          <div className="proof-chip" aria-hidden="true">
-            <div>
-              <strong>{slide.metric}</strong>
-              <b>{slide.value}</b>
+            <div className="cinematic-actions">
+              <a href="#contact" className="cinematic-primary-cta">
+                BUILD WITH US <ArrowRight size={17} />
+              </a>
+              <a href="#cards-section" className="cinematic-secondary-cta">EXPLORE THE WORK</a>
             </div>
+          </div>
+          <div className="cinematic-slide-foot">
+            <span>SELECTED FOUNDER WORK <i>◆</i> BEFORE PERIMYSTIC</span>
+            <span className="cinematic-slide-index">0{i + 1}<b>/</b>03</span>
+            <span>SCROLL TO EXPLORE <span className="cinematic-scroll-arrow">↓</span></span>
           </div>
         </article>
       ))}
@@ -992,11 +1016,6 @@ export default function PerimysticExperience() {
         scrollTrigger: { trigger: document.documentElement, start: 0, end: "max", scrub: 0.2 },
       });
 
-      gsap.to(".hero-inner", {
-        yPercent: -8, autoAlpha: 0.15, ease: "none",
-        scrollTrigger: { trigger: ".hero", start: "30% top", end: "bottom top", scrub: true },
-      });
-
       const attentionEl = document.querySelector<HTMLElement>(".attention-model");
       const glowEl      = document.querySelector<HTMLElement>(".attention-glow");
       if (attentionEl && glowEl) {
@@ -1027,6 +1046,7 @@ export default function PerimysticExperience() {
           if (copy) gsap.fromTo(copy.children, { yPercent: 60, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 0.6, stagger: 0.08, ease: "power3.out", delay: 0.12 });
         };
         revealCopy(proofSlideEls[0]);
+        proofGallery.dispatchEvent(new Event("perimystic:slide-change"));
         ScrollTrigger.create({
           trigger: proofGallery, start: "top top", end: `+=${total * 150}%`, pin: true, pinSpacing: true, refreshPriority: 3,
           onUpdate: (self) => {
@@ -1040,6 +1060,9 @@ export default function PerimysticExperience() {
               { autoAlpha: 1, clipPath: down ? "inset(100% 0% 0% 0%)" : "inset(0% 0% 100% 0%)" },
               { clipPath: "inset(0% 0% 0% 0%)", duration: 0.8, ease: "power3.inOut", overwrite: true }
             );
+            outgoing.dataset.active = "false";
+            incoming.dataset.active = "true";
+            proofGallery.dispatchEvent(new Event("perimystic:slide-change"));
             revealCopy(incoming);
             current = idx;
           },
@@ -1116,11 +1139,11 @@ export default function PerimysticExperience() {
           .to(stars, { autoAlpha: 0.18, duration: 0.5, ease: "power2.out" }, 1.1);
       }
 
-      // Hero entrance (plays right as preloader exits)
-      gsap.from(".hero-kicker",  { autoAlpha: 0, y: 24, duration: 0.7,  ease: "power2.out" });
-      gsap.from(".hero-tagline", { autoAlpha: 0, y: 30, duration: 0.85, ease: "power2.out", delay: 0.25 });
-      gsap.from(".hero-card",    { autoAlpha: 0, y: 24, duration: 0.7,  ease: "power2.out", delay: 0.4  });
-      gsap.from(".hero-scroll",  { autoAlpha: 0, duration: 0.7, ease: "power2.out", delay: 0.55 });
+      // Warm title reveal over the opening reel, after the branded preloader.
+      gsap.from(".cinematic-hero-nav", { autoAlpha: 0, y: -16, duration: .7, ease: "power2.out" });
+      gsap.from(".cinematic-slide:first-of-type .cinematic-copy > *", {
+        autoAlpha: 0, y: 28, duration: .8, stagger: .11, ease: "power3.out", delay: .15,
+      });
 
       // Stat count-up
       gsap.utils.toArray<HTMLElement>(".feature-card strong").forEach((el) => {
@@ -1187,9 +1210,8 @@ export default function PerimysticExperience() {
       <div className="cinema" aria-hidden="true" />
       <div className="grain" aria-hidden="true" />
       <main>
-        <Hero />
-        <AttentionModel />
         <ProofSlides />
+        <AttentionModel />
         <WorkShowcase />
         <WhatWeDoMarquee />
         <OpenWeightProof />
