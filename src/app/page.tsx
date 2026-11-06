@@ -1,5 +1,5 @@
-import SnagExperience from "@/components/SnagExperience";
+import PerimysticExperience from "@/components/PerimysticExperience";
 
 export default function Home() {
-  return <SnagExperience />;
+  return <PerimysticExperience />;
 }
