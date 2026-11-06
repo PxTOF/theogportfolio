@@ -695,7 +695,7 @@ function LatestReel() {
 
   const media = post?.media || "/assets/work/superprofile.mp4";
   const isVideo = post ? post.isVideo : true;
-  const href = post?.permalink ?? brand.instagramUrl;
+  const href = post?.permalink || brand.instagramUrl || "#work";
 
   return (
     <a
@@ -1226,14 +1226,18 @@ export default function PerimysticExperience() {
                 <p className="contact-cta-kicker">Your next big idea starts here</p>
                 {process.env.NEXT_PUBLIC_PERIMYSTIC_SHEET_FORM_URL ? (
                   <ContactForm />
-                ) : (
+                ) : brand.instagramUrl ? (
                   <a className="contact-cta-btn" href={brand.instagramUrl} target="_blank" rel="noreferrer" data-cursor="view">
                     Start a conversation <ArrowRight size={18} />
                   </a>
+                ) : (
+                  <p className="contact-unconfigured">Enquiries opening soon. Our official contact details will appear here once verified.</p>
                 )}
-                <div className="contact-channels">
-                  <a href={brand.instagramUrl} target="_blank" rel="noreferrer" data-cursor="view"><AtSign size={15} />{brand.instagram}</a>
-                </div>
+                {brand.instagramUrl && (
+                  <div className="contact-channels">
+                    <a href={brand.instagramUrl} target="_blank" rel="noreferrer" data-cursor="view"><AtSign size={15} />{brand.instagram || "Instagram"}</a>
+                  </div>
+                )}
                 <p className="contact-cta-note">Based in India · Collaborating everywhere</p>
               </div>
             </div>
@@ -1250,7 +1254,7 @@ export default function PerimysticExperience() {
         </div>
         <div className="footer-meta">
           <div className="footer-links">
-            <a href={brand.instagramUrl} target="_blank" rel="noreferrer" data-cursor="view">{brand.instagram}</a>
+            {brand.instagramUrl && <a href={brand.instagramUrl} target="_blank" rel="noreferrer" data-cursor="view">{brand.instagram || "Instagram"}</a>}
             <a href="#capabilities" data-cursor="view">Services</a>
             <a href="#contact" data-cursor="view">Get in touch</a>
           </div>
