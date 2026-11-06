@@ -7,7 +7,7 @@ const body = Syne({ variable: "--font-body", subsets: ["latin"] });
 const mono = DM_Mono({ variable: "--font-mono", subsets: ["latin"], weight: ["400", "500"] });
 
 // Set NEXT_PUBLIC_SITE_URL to the final domain when it is connected to Perimystic.
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://theogportfolio.vercel.app";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://bestone-git-perimystic-096dce-sharmapushkar2003-3749s-projects.vercel.app";
 const SITE_DESC =
   "Perimystic is a creative marketing agency for brands that want to be noticed. Social content, creator campaigns and brand launches with a little extra character.";
 
@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     "influencer campaigns", "social media", "brand launches", "India",
   ],
   authors: [{ name: "Perimystic" }],
-  icons: { icon: "/icon.svg", shortcut: "/icon.svg" },
+  icons: { icon: [{ url: "/assets/branding/perimystic-crest.webp", type: "image/webp" }], shortcut: "/assets/branding/perimystic-crest.webp" },
   openGraph: {
     type: "website",
     siteName: "Perimystic",
