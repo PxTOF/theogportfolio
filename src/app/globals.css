@@ -2282,3 +2282,35 @@ html, body { background: #f3e4c4; }
   .cinematic-slide video { display:none; }
   .cinematic-copy,.cinematic-hero-nav,.cinematic-slide-foot { opacity:1 !important; transform:none !important; }
 }
+
+/* Official mark presentation and direct contact accessibility. */
+.peri-opening-reveal .brand-artwork-image {
+  width:100%;
+  height:auto;
+  max-height:min(46svh,430px);
+  margin-inline:auto;
+  mix-blend-mode:multiply;
+}
+.footer-mark {
+  width:min(88vw,500px);
+  padding:clamp(10px,2.4vw,22px);
+  background:#f5e8c9;
+  border:2px solid #d9b47c;
+  box-shadow:6px 8px 0 rgba(16,42,32,.25);
+}
+.footer-mark .brand-artwork { display:block; width:100%; }
+.footer-mark .brand-artwork-image {
+  width:100%; height:auto; max-height:440px;
+  object-fit:contain; mix-blend-mode:normal;
+}
+.contact-channels { max-width:min(760px,95%); margin-inline:auto; gap:1rem 1.5rem; }
+.contact-channels a { overflow-wrap:anywhere; word-break:break-word; text-transform:none; }
+.contact-cta-note {
+  display:flex; align-items:center; justify-content:center; gap:.45rem;
+}
+@media (max-width:540px) {
+  .contact-channels { flex-direction:column; gap:.75rem; font-size:.78rem; }
+  .contact-channels a { justify-content:center; text-align:center; }
+  .contact-cta-note { font-size:.67rem; letter-spacing:0; }
+  .footer-mark { width:min(83vw,380px); }
+}
