@@ -21,6 +21,7 @@ export const metadata: Metadata = {
     "influencer campaigns", "social media", "brand launches", "India",
   ],
   authors: [{ name: "Perimystic" }],
+  icons: { icon: "/icon.svg", shortcut: "/icon.svg" },
   openGraph: {
     type: "website",
     siteName: "Perimystic",
