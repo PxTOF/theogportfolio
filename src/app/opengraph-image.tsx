@@ -24,7 +24,7 @@ export default function OpengraphImage() {
           Perimystic
         </div>
         <div style={{ display: "flex", marginTop: 18, fontSize: 31, color: "#21493d" }}>
-          Good brands don't whisper. They make a scene.
+          Good brands don&apos;t whisper. They make a scene.
         </div>
         <div style={{ display: "flex", marginTop: 44, fontSize: 20, letterSpacing: 8, color: "#446658" }}>
           INSIGHT  ◆  STRATEGY  ◆  IMPACT
