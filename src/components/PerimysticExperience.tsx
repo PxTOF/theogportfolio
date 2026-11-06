@@ -487,6 +487,12 @@ function ProofSlides() {
     const vids = Array.from(sec.querySelectorAll<HTMLVideoElement>(".proof-slide video"));
     const mobile = window.matchMedia("(max-width: 900px)").matches;
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Hidden desktop layers must never steal keyboard or screen reader focus.
+    sec.querySelectorAll<HTMLElement>(".proof-slide").forEach((slide, i) => {
+      slide.inert = !mobile && i !== 0;
+      if (!mobile && i !== 0) slide.setAttribute("aria-hidden", "true");
+      else slide.removeAttribute("aria-hidden");
+    });
     const play = (v: HTMLVideoElement) => {
       if (reduceMotion || document.hidden) return;
       v.muted = true;
@@ -1061,6 +1067,10 @@ export default function PerimysticExperience() {
             );
             outgoing.dataset.active = "false";
             incoming.dataset.active = "true";
+            outgoing.inert = true;
+            incoming.inert = false;
+            outgoing.setAttribute("aria-hidden", "true");
+            incoming.removeAttribute("aria-hidden");
             proofGallery.dispatchEvent(new Event("perimystic:slide-change"));
             revealCopy(incoming);
             current = idx;
@@ -1140,7 +1150,7 @@ export default function PerimysticExperience() {
 
       // Warm title reveal over the opening reel, after the branded preloader.
       gsap.from(".cinematic-hero-nav", { autoAlpha: 0, y: -16, duration: .7, ease: "power2.out" });
-      gsap.from(".cinematic-slide[data-idx="0"] .cinematic-copy > *", {
+      gsap.from('.cinematic-slide[data-idx="0"] .cinematic-copy > *', {
         autoAlpha: 0, y: 28, duration: .8, stagger: .11, ease: "power3.out", delay: .15,
       });
 
