@@ -1,37 +1,45 @@
-# Perimystic — working branch handover (6 November 2026)
+# Perimystic — live redesign handover
 
-## Repository state
+Status: **draft PR #1** on `perimystic/desi-maximalist-rebrand` in `PxTOF/theogportfolio`.
+Do not merge to `main` without the owner's approval.
 
-- Repo: `PxTOF/theogportfolio`
-- Branch: `perimystic/desi-maximalist-rebrand`
-- Review: draft pull request #1. **Do not merge to `main` without approval.**
-- Vercel branch deployment is connected; GitHub Actions checks lint, TypeScript and build.
-- Founder work belongs to earlier employers/freelance engagements, **not** Perimystic clients.
+## Approved brand inputs received 6 Nov 2026
 
-## Work applied in this iteration
+The original provided vintage agency logo is now committed as a real image rather than recreated through CSS or generated text:
 
-1. Replaced the old 3.2-second, black-screen starfield and mandatory click-to-enter with a parchment signboard intro. Automatic ~1.75-second play plus ~0.42-second reveal; skip button and keyboard support; session-only once; reduced-motion bypass; scroll lock released.
-2. Reworked site palette around parchment (`#f0dfba`), terracotta (`#a64021`), dark forest teal (`#193f33`) and muted brass. Rebalanced hero, sections, projects, contact and footer.
-3. Removed fake Impact/canvas/WebGL wordmark and GPU-heavy logo particle simulation. Ambient WebGL is retained only as subtle background; phones skip heavier effects.
-4. Added shared `LogoMark` image slot. When `NEXT_PUBLIC_PERIMYSTIC_LOGO_SRC` is set to a valid supplied image (ideally `/assets/branding/perimystic-logo.png`), the **actual official logo** replaces the temporary *plain typographic label* in preloader, hero and footer. The temporary label is **not** claimed as the original logo.
-5. Scoped GSAP animations and ScrollTrigger teardown; removed DOM-mutating SplitType wrappers and uncleaned attention hover listeners. Horizontal card scroll now recalculates overflow on ScrollTrigger refresh.
-6. Disabled an unverified Instagram URL rather than sending visitors to an account that may not belong to the agency. Contact CTAs are only activated when official social details or a working form are configured.
-7. Updated temporary editorial favicon, Open Graph card and browser theme to the heritage palette. Replace the favicon with the approved monogram once supplied.
+- `public/assets/branding/perimystic-logo.webp` — faithful full 1080×1080 logo from the user upload, WebP converted for responsive delivery.
+- `public/assets/branding/perimystic-crest.webp` — cropped **original** P-arrow monogram, for small-scale navigation and browser icon.
+- No AI redraw, fake Impact wordmark or canvas-generated logo is used.
+- Visual palette: parchment, terracotta, forest-teal, muted brass. Original copy retains Hindi `रणनीति` / `परिणाम`.
 
-## Inputs needed from the owner
+The owner confirmed public enquiries should use:
+- Instagram: `https://www.instagram.com/perimystic/`
+- Temporary contact email: `pushkarsvashisht@gmail.com` (not yet a dedicated agency inbox)
+- Phone: `+91 97293 17565` (call link: `tel:+919729317565`)
+- Service area: **Chandigarh and Delhi NCR**
 
-- **Original standalone Perimystic logo image** (the square vintage signboard image attached in the prior ChatGPT conversation). Prefer PNG at full resolution; do not regenerate or trace its typography. Add to `public/assets/branding/perimystic-logo.png` and configure `NEXT_PUBLIC_PERIMYSTIC_LOGO_SRC=/assets/branding/perimystic-logo.png` in Vercel. Crop/transparent variants only after inspecting the real source.
-- **Verified official Instagram handle/link** and business email. Once confirmed, configure `NEXT_PUBLIC_PERIMYSTIC_INSTAGRAM_URL` and `NEXT_PUBLIC_PERIMYSTIC_INSTAGRAM_LABEL`; add official email and tested lead handling.
-- Final domain (configure `NEXT_PUBLIC_SITE_URL`) and approval of founder-work/media rights.
+## Page structure and visual changes
 
-## Tests and acceptance
+1. **Hero is now the three-film showcase** previously found in the third section. The old static hero component is removed. Desktop shows a deep-teal editorial split-screen reel canvas with vintage navigation, actual P crest, expressive headline, editorial copy, CTA and film progress. Mobile switches to three native vertically stacked video sections with readable scrims.
+2. The three films show **selected founder work before Perimystic** (Depano, Burger Bae, SuperProfile). Their attribution is displayed on every slide and on the work section. These are **not** mislabelled as Perimystic client contracts.
+3. Preloader auto-reveals the actual owner logo on parchment after a brief 1.75-second intro (+ 0.42-second fade), with skip button, per-session skip on repeat, and reduced-motion support.
+4. Authentic crest is the favicon; the original artwork reappears in the footer. Contact CTA opens the provided email, with direct phone and Instagram links and local availability.
+5. WebGL remains ambient-only; the old incorrect particle text logo is removed. GSAP now scopes/reverts its animations; hidden pinned slides are inert so invisible links don't steal keyboard focus; videos pause when no longer active.
+6. Existing capabilities remain Social & Content, Creator Campaigns and Brand Launches.
 
-The existing GitHub Actions workflow runs `npm run lint`, `npx tsc --noEmit` and `npm run build` on each push. A successful Vercel build is necessary but **not a visual browser test**.
+## Automated testing
 
-Still require a live desktop/mobile run at 375px / 768px / 1440px and with reduced motion. Check browser console/network; intro startup and auto-exit; keyboard skip; repeat visit; GSAP pin transitions; Lenis smooth scrolling; horizontal cards on resize; video posters and playback; WebGL loss/fallback; contact link, form submission and responsive clipping. Capture screenshots and iterate before merging.
+`.github/workflows/perimystic-site.yml` runs:
+- TypeScript (`npx tsc --noEmit`)
+- ESLint (`npm run lint`)
+- Production build (`npm run build`)
+- Playwright Chromium smoke tests at 1440px, 768px and 375px plus reduced-motion.
+- Captures browser screenshots as a workflow artifact named `perimystic-browser-screenshots` for review.
 
-## Brand/business constraints
+The smoke tests check intro auto-exit, one H1, video and logo HTTP availability, responsive overflow, social/mail/tel links, pinned slide change, and hidden-slide keyboard focus.
 
-Core offers: Social & Content; Creator Campaigns; Brand Launches. Do not carry over Snag phone numbers, mailboxes, addresses or social-feed IDs. Previous work (SuperProfile, Burger Bae, Depano, Body Juices, Barber Syndicate) remains explicitly founder experience.
+## Before merging
 
-Do not turn on the Google Apps Script form without a tested Perimystic-only endpoint (`NEXT_PUBLIC_PERIMYSTIC_SHEET_FORM_URL`). The old no-cors client-side submission could not prove successful delivery. Verify any feed integration through `NEXT_PUBLIC_PERIMYSTIC_BEHOLD_FEED_ID` before activation.
+Review the latest Vercel draft deployment and browser screenshots for frame accuracy, legibility, visual clipping, media rights, mobile playback and GSAP pinning. Confirm final domain in `NEXT_PUBLIC_SITE_URL`; replace personal email with future official agency inbox when provisioned. Do not activate an untested public lead form.
+
+**Never merge without owner approval.**
