@@ -1,6 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-<rect width="64" height="64" rx="12" fill="#ef352b"/>
-<path d="M5 5H59V59H5Z" fill="none" stroke="#ffd32a" stroke-width="4" stroke-dasharray="5 3"/>
-<path d="M20 50V14H38Q51 14 51 28Q51 42 38 42H31V50Z" fill="#ffd32a" stroke="#163eb5" stroke-width="3" stroke-linejoin="round"/>
-<path d="M31 23V33H38Q42 33 42 28Q42 23 38 23Z" fill="#163eb5"/>
+  <!-- Temporary editorial favicon; replace with the approved monogram asset. -->
+  <rect width="64" height="64" rx="8" fill="#f1dfb9"/>
+  <rect x="4" y="4" width="56" height="56" rx="6" fill="none" stroke="#a54122" stroke-width="3"/>
+  <rect x="9" y="9" width="46" height="46" rx="3" fill="none" stroke="#234a3d" stroke-width="1.5"/>
+  <text x="32" y="46" fill="#a54122" text-anchor="middle" font-family="Georgia,serif" font-weight="bold" font-size="42">P</text>
+  <path d="M17 52h30" stroke="#234a3d" stroke-width="2"/>
 </svg>
