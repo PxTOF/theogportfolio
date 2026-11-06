@@ -7,9 +7,9 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import SplitType from "split-type";
-import { ArrowRight, AtSign, Mail, MapPin, MessageCircle, Pause, Phone, Play, Volume2, VolumeX } from "lucide-react";
+import { ArrowRight, AtSign, Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { brand, projects, services, type Project } from "@/lib/content";
-import { drawSnagLogo } from "@/lib/logo";
+import { drawPerimysticLogo } from "@/lib/logo";
 import { useScrollStore } from "@/webgl/store";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -17,9 +17,9 @@ gsap.registerPlugin(ScrollTrigger);
 const Scene = dynamic(() => import("@/webgl/Scene"), { ssr: false });
 
 const proofStats = [
-  ["Creators activated", "500+", "A paid creator network built to move clean — not just rack up vanity reach."],
-  ["Daily revenue", "10×", "Burger Bae went ₹30K → ₹3L a day on content built to convert, not just look cute."],
-  ["Organic posts", "360+", "One Radisson creator night, engineered to keep circulating long after last call."],
+  ["Creator relationships", "100+", "From the founder's work before Perimystic."],
+  ["Paid activations", "500+", "Creator-led activations across previous marketing roles."],
+  ["Brands built", "02", "Body Juices and Barber Syndicate — built from scratch before Perimystic."],
 ];
 type ProofSlide = {
   eyebrow: string; title: string; copy: string;
@@ -29,35 +29,22 @@ type ProofSlide = {
 // /assets/work/ — drop the renamed files there (see rename map). Copy is lean
 // placeholder; the bold/quirky rewrite happens in the text pass.
 const proofSlides: ProofSlide[] = [
-  {
-    eyebrow: "Reel 01 — Depano",
-    title: "Fixing what was stuck.",
-    copy: "A brand with no real traction, reworked into sharp positioning and content that converts.",
-    media: "/assets/work/pinned-1.mp4",
-    poster: "/assets/posters/depano.png",
-    metric: "Focus",
-    value: "Sales intent",
-  },
-  {
-    eyebrow: "Reel 02 — In the wild",
-    title: "Made to be scrolled twice.",
-    copy: "Content built to stop the thumb first, then earn the share.",
-    media: "/assets/work/pinned-2.mp4",
-    metric: "Built for",
-    value: "The share",
-  },
-  {
-    eyebrow: "Reel 03 — Attention, engineered",
-    title: "We don't chase reach. We build it.",
-    copy: "Systems that turn one-off posts into brand memory.",
-    media: "/assets/work/pinned-3.mp4",
-    metric: "Output",
-    value: "Momentum",
-  },
+  { eyebrow: "Founder work 01 — Depano", title: "A sharper point of view.",
+    copy: "Fashion positioning and content direction from a previous role.",
+    media: "/assets/work/pinned-1.mp4", poster: "/assets/posters/depano.png",
+    metric: "Focus", value: "Brand direction" },
+  { eyebrow: "Founder work 02 — Burger Bae", title: "Content with an appetite.",
+    copy: "Freelance social creative and creator-led campaigns, before Perimystic.",
+    media: "/assets/media/burger-bae.mp4", poster: "/assets/posters/burger-bae.png",
+    metric: "Discipline", value: "Content + creators" },
+  { eyebrow: "Founder work 03 — SuperProfile", title: "People make the movement.",
+    copy: "Creator partnerships and campaign systems from a previous role.",
+    media: "/assets/media/peribest.mp4", poster: "/assets/posters/peribest.png",
+    metric: "Focus", value: "Creator partnerships" },
 ];
 
-function LogoMark({ className = "", priority = false }: { className?: string; priority?: boolean }) {
-  return <Image src={brand.logo} alt="SNAG logo" width={815} height={524} priority={priority} className={className} />;
+function LogoMark({ className = "" }: { className?: string }) {
+  return <span className={`perimystic-mark ${className}`} aria-label="Perimystic"><span>PERI</span><span>MYSTIC</span><i aria-hidden="true">✺</i></span>;
 }
 
 // A failed/lost WebGL context (or postprocessing init) must never white-screen
@@ -82,7 +69,7 @@ function Preloader({ onDone }: { onDone: (skipped?: boolean) => void }) {
     // Already played the intro this session (reload / back / re-entry)? Skip it,
     // reveal the site immediately, and let the browser restore scroll position.
     let seen = false;
-    try { seen = sessionStorage.getItem("snag:intro") === "1"; } catch { /* ignore */ }
+    try { seen = sessionStorage.getItem("perimystic:intro") === "1"; } catch { /* ignore */ }
     if (seen) {
       if ("scrollRestoration" in history) history.scrollRestoration = "auto";
       // Deferred to avoid a synchronous setState cascade inside the effect.
@@ -119,7 +106,7 @@ function Preloader({ onDone }: { onDone: (skipped?: boolean) => void }) {
       const off    = document.createElement("canvas");
       off.width = W; off.height = H;
       const oct    = off.getContext("2d")!;
-      drawSnagLogo(oct, W, H, { widthFrac: W > H ? 0.42 : 0.78, cy: LOGO_CY, color: "#ffffff" });
+      drawPerimysticLogo(oct, W, H, { widthFrac: W > H ? 0.42 : 0.78, cy: LOGO_CY, color: "#ffffff" });
 
       const imgData = oct.getImageData(0, 0, W, H);
       const pixels: [number, number][] = [];
@@ -263,7 +250,7 @@ function Preloader({ onDone }: { onDone: (skipped?: boolean) => void }) {
       setPhase("exiting");
       // Remember the intro played so reloads / back don't replay it this session,
       // and re-enable native scroll restoration for those subsequent loads.
-      try { sessionStorage.setItem("snag:intro", "1"); } catch { /* ignore */ }
+      try { sessionStorage.setItem("perimystic:intro", "1"); } catch { /* ignore */ }
       if ("scrollRestoration" in history) history.scrollRestoration = "auto";
       // Pin to the hero so the reveal always starts at the top (the dismiss
       // wheel/scroll must not carry the page down into another section).
@@ -303,7 +290,7 @@ function Preloader({ onDone }: { onDone: (skipped?: boolean) => void }) {
         )}
       </div>
       <div className="preloader-meta">
-        <span>Loading universe</span>
+        <span>Rang jam raha hai</span>
         <strong>{String(progress).padStart(3, "0")}</strong>
       </div>
       <div className="preloader-bar" style={{ "--p": `${progress}%` } as React.CSSProperties} />
@@ -617,17 +604,24 @@ function Hero() {
   return (
     <section className="hero" id="intro">
       <div className="hero-shade" aria-hidden="true" />
+      <div className="hero-border hero-border--top" aria-hidden="true" />
+      <div className="hero-border hero-border--bottom" aria-hidden="true" />
+      <div className="hero-corner hero-corner--left" aria-hidden="true">✺</div>
+      <div className="hero-corner hero-corner--right" aria-hidden="true">✺</div>
       <div className="hero-inner">
-        <p className="hero-kicker">A new-age creative &amp; content studio — Gurgaon</p>
-        <div className="hero-view" aria-hidden="true" />
+        <p className="hero-kicker">✦ Indian at heart · Creative by nature ✦</p>
+        <div className="hero-view" aria-hidden="true">
+          <div className="hero-display-mark"><span>PERI</span><span>MYSTIC</span></div>
+        </div>
         <h1 className="hero-tagline">
-          We don&apos;t just make content. <em>We make people care.</em>
+          Good brands don&apos;t whisper. <em>They make a scene.</em>
         </h1>
+        <a href="#contact" className="hero-action" data-cursor="view">Let&apos;s make some noise <ArrowRight size={18} /></a>
       </div>
       <aside className="hero-card">
-        <p className="hero-card-eyebrow">Studio · Gurgaon</p>
+        <p className="hero-card-eyebrow">थोड़ा हटके / FULL POWER</p>
         <div className="dashline" />
-        <p className="hero-card-body">Built for brands that want relevance, not just reach.</p>
+        <p className="hero-card-body">Social. Creators. Campaigns. Made with character, not templates.</p>
       </aside>
       <div className="hero-scroll" aria-hidden="true">
         <span className="hero-scroll-line" />
@@ -644,10 +638,10 @@ function AttentionModel() {
       <div className="attention-glow" aria-hidden="true" />
       <div className="model-title">
         <p className="section-label">What we do</p>
-        <h2>We build attention, relevance &amp; growth.</h2>
+        <h2>We make brands hard to ignore.</h2>
         <p>
-          We study how people actually behave, turn it into content systems, and make attention compound into brand
-          value. Insight, speed, execution — no fluff, no filler calendar.
+          We bring strategy, creative thinking and the right people together. From content to creator campaigns,
+          we believe brands should make something worth noticing.
         </p>
       </div>
       <div className="feature-grid">
@@ -715,11 +709,11 @@ function WorkShowcase() {
     <>
       <section className="work-product" id="product">
         <div className="work-intro">
-          <p className="section-label">The receipts</p>
-          <h2>We don&apos;t show everything. Just what moved the needle.</h2>
+          <p className="section-label">The founder’s earlier work</p>
+          <h2>The work before the name.</h2>
           <p>
-            Open the work, play the reels, and see what actually moved when content was treated as a system, not a
-            calendar.
+            Selected work from previous roles and freelance projects. These are founder experience examples,
+            not projects contracted through Perimystic.
           </p>
           <div className="work-intro-cue" aria-hidden="true">
             <span>Drag / scroll</span>
@@ -738,19 +732,19 @@ function WorkShowcase() {
   );
 }
 
-const MARQUEE_TOP    = ["CONTENT", "CREATORS", "CAMPAIGNS", "BRANDING", "GROWTH", "REELS", "STRATEGY"];
-const MARQUEE_BOTTOM = ["SOCIAL",  "INFLUENCE", "PRODUCTION", "DESIGN",  "PAID ADS", "CULTURE", "LAUNCHES"];
+const MARQUEE_TOP = ["CONTENT", "CREATORS", "CAMPAIGNS", "BOLD IDEAS", "SOCIAL", "REELS", "CULTURE"];
+const MARQUEE_BOTTOM = ["THODA HATKE", "FULL POWER", "BRAND LOVE", "CREATIVE", "STORIES", "LAUNCHES"];
 
 function WhatWeDoMarquee() {
   return (
     <section className="marquee-sec" id="capabilities">
       <div className="marquee-head">
-        <p className="section-label">Everything under one roof</p>
+        <p className="section-label">Our kind of work</p>
         <h2>
-          We do a lot. <em>On purpose.</em>
+          Less noise. <em>More feeling.</em>
         </h2>
         <p className="marquee-sub">
-          One team for content, creators, and growth — so the brand actually moves as one thing.
+          Strategy, content and creators working together, with one distinctive point of view.
         </p>
       </div>
       <div className="marquee" aria-hidden="true">
@@ -798,7 +792,7 @@ function LatestReel() {
     // Public Behold feed id (same one in the widget embed) — hardcoded as a
     // default so the card works on Vercel even without the env var set; the env
     // var overrides it if present.
-    const id = process.env.NEXT_PUBLIC_BEHOLD_FEED_ID || "bDimAptWlG8fo0gknVwk";
+    const id = process.env.NEXT_PUBLIC_PERIMYSTIC_BEHOLD_FEED_ID;
     if (!id) return;
     let alive = true;
     fetch(`https://feeds.behold.so/${id}?t=${Date.now()}`, { cache: "no-store" })
@@ -820,7 +814,7 @@ function LatestReel() {
             ? (pick.mediaUrl ?? pick.media_url ?? "")
             : (stableImg ?? pick.mediaUrl ?? pick.media_url ?? ""),
           thumb: pick.thumbnailUrl ?? pick.thumbnail_url,
-          permalink: pick.permalink ?? "https://instagram.com/studio.snag",
+          permalink: pick.permalink ?? brand.instagramUrl,
           isVideo,
         });
       })
@@ -848,7 +842,7 @@ function LatestReel() {
 
   const media = post?.media || "/assets/work/superprofile.mp4";
   const isVideo = post ? post.isVideo : true;
-  const href = post?.permalink ?? "https://instagram.com/studio.snag";
+  const href = post?.permalink ?? brand.instagramUrl;
 
   return (
     <a
@@ -874,9 +868,9 @@ function LatestReel() {
           <span className="latest-reel-scrim" aria-hidden="true" />
           <span className="latest-reel-glare" aria-hidden="true" />
         </div>
-        <span className="latest-reel-live"><i />Live</span>
+        <span className="latest-reel-live"><i />{post ? "Latest" : "Archive"}</span>
         <span className="latest-reel-meta">
-          <strong>Latest on Instagram</strong>
+          <strong>{post ? "Latest on Instagram" : "Founder work"}</strong>
           <em>{brand.instagram}</em>
         </span>
       </div>
@@ -893,7 +887,7 @@ function ContactForm() {
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
-    const url = process.env.NEXT_PUBLIC_SHEET_FORM_URL;
+    const url = process.env.NEXT_PUBLIC_PERIMYSTIC_SHEET_FORM_URL;
     const fd = new FormData(form);
     const data = new URLSearchParams();
     fd.forEach((v, k) => data.append(k, String(v)));
@@ -923,7 +917,7 @@ function ContactForm() {
       </button>
       {state === "sent" && <p className="contact-form-msg" role="status">Got it — we&apos;ll reply within a day.</p>}
       {state === "error" && (
-        <p className="contact-form-msg contact-form-msg--err" role="status">Couldn&apos;t send — email {brand.email} instead.</p>
+        <p className="contact-form-msg contact-form-msg--err" role="status">Couldn&apos;t send. Please try our Instagram instead.</p>
       )}
     </form>
   );
@@ -934,9 +928,9 @@ function OpenWeightProof() {
     <section className="open-proof" id="studio">
       <div className="open-proof-head">
         <div className="open-proof-head-copy">
-          <p className="section-label">Who we are</p>
+          <p className="section-label">Meet the new kid in town</p>
           <h2 className="open-proof-title">
-            We don&apos;t chase reach. <em>We engineer attention</em> that turns into brand value.
+            Same internet. <em>Different kind of energy.</em>
           </h2>
         </div>
         <LatestReel />
@@ -945,12 +939,12 @@ function OpenWeightProof() {
       <div className="manifesto">
         <div className="manifesto-lead">
           <p>
-            A hybrid of creators, strategists, and operators — we started in social and grew into a
-            full-stack studio for talent, influence, and cultural impact.
+            Perimystic is a founder-led creative marketing agency for consumer brands.
+            We bring social content, creator thinking and campaign ideas together — with a distinctly Indian eye for colour and culture.
           </p>
           <p className="manifesto-sign">
-            No outdated playbooks. No vanity metrics. Just sharp strategy, strong execution, and{" "}
-            <span>content that actually moves.</span>
+            Not here to sell a hundred vague services. Here to make sharp work, execute it properly,
+            and give brands <span>something to be remembered for.</span>
           </p>
         </div>
         <ol className="manifesto-points">
@@ -966,14 +960,14 @@ function OpenWeightProof() {
       <div className="capabilities-block">
         <div className="capabilities-head">
           <p className="capabilities-label">What we do</p>
-          <h3 className="capabilities-title">One team. The full stack.</h3>
+          <h3 className="capabilities-title">Three things. Done well.</h3>
           <p className="capabilities-intro">
-            Content, creators, and growth under a single roof — so your brand moves as one thing,
-            not five disconnected vendors.
+            Social and content management, creator campaigns, and brand launch creative.
+              Built with the right specialists for each project.
           </p>
         </div>
         <div className="service-grid">
-          {services.slice(0, 8).map((service) => {
+          {services.map((service) => {
             const Icon = service.icon;
             return (
               <article className="service-card" key={service.title}>
@@ -1358,7 +1352,7 @@ export default function SnagExperience() {
                     Let&apos;s build something that actually <em>moves.</em>
                   </h2>
                   <p className="contact-flex">
-                    This was just supposed to be a portfolio — and we built it <em>like this</em>. Now imagine what we&apos;d do with your brand.
+                    Got a brand that deserves more personality? <em>Tell us what you&apos;re building.</em>
                   </p>
                 </div>
               </div>
@@ -1367,22 +1361,18 @@ export default function SnagExperience() {
                 <span className="contact-tick contact-tick--tr" aria-hidden="true" />
                 <span className="contact-tick contact-tick--bl" aria-hidden="true" />
                 <span className="contact-tick contact-tick--br" aria-hidden="true" />
-                <p className="contact-cta-kicker">Tell us what you&apos;re building</p>
-                <ContactForm />
-                <a className="contact-cta-btn contact-cta-btn--ghost" href={`https://wa.me/${brand.phone.replace(/[^\d]/g, "")}`} target="_blank" rel="noreferrer" data-cursor="view">
-                  <MessageCircle size={17} />WhatsApp instead
-                </a>
+                <p className="contact-cta-kicker">Your next big idea starts here</p>
+                {process.env.NEXT_PUBLIC_PERIMYSTIC_SHEET_FORM_URL ? (
+                  <ContactForm />
+                ) : (
+                  <a className="contact-cta-btn" href={brand.instagramUrl} target="_blank" rel="noreferrer" data-cursor="view">
+                    Start a conversation <ArrowRight size={18} />
+                  </a>
+                )}
                 <div className="contact-channels">
-                  <a href={`mailto:${brand.email}`} data-cursor="view"><Mail size={15} />{brand.email}</a>
-                  <a href="https://instagram.com/studio.snag" target="_blank" rel="noreferrer" data-cursor="view"><AtSign size={15} />{brand.instagram}</a>
-                  <a href={`tel:${brand.phone.replace(/\s/g, "")}`} data-cursor="view"><Phone size={15} />{brand.phone}</a>
-                  <a href={`tel:${brand.phone2.replace(/\s/g, "")}`} data-cursor="view"><Phone size={15} />{brand.phone2}</a>
+                  <a href={brand.instagramUrl} target="_blank" rel="noreferrer" data-cursor="view"><AtSign size={15} />{brand.instagram}</a>
                 </div>
-                <div className="contact-offices">
-                  <div className="contact-office"><MapPin size={15} /><span><strong>Gurgaon</strong>{brand.location}</span></div>
-                  <div className="contact-office"><MapPin size={15} /><span><strong>Ranchi</strong>{brand.location2}</span></div>
-                </div>
-                <p className="contact-cta-note">Limited projects. Built with intent — usually a reply within a day.</p>
+                <p className="contact-cta-note">Based in India · Collaborating everywhere</p>
               </div>
             </div>
           </div>
@@ -1398,14 +1388,12 @@ export default function SnagExperience() {
         </div>
         <div className="footer-meta">
           <div className="footer-links">
-            <a href={`mailto:${brand.email}`} data-cursor="view">{brand.email}</a>
-            <a href="https://instagram.com/studio.snag" target="_blank" rel="noreferrer" data-cursor="view">{brand.instagram}</a>
-            <a href={`tel:${brand.phone.replace(/\s/g, "")}`} data-cursor="view">{brand.phone}</a>
-            <a href={`tel:${brand.phone2.replace(/\s/g, "")}`} data-cursor="view">{brand.phone2}</a>
+            <a href={brand.instagramUrl} target="_blank" rel="noreferrer" data-cursor="view">{brand.instagram}</a>
+            <a href="#capabilities" data-cursor="view">Services</a>
+            <a href="#contact" data-cursor="view">Get in touch</a>
           </div>
-          <p className="footer-loc"><strong>Gurgaon</strong> — {brand.location}</p>
-          <p className="footer-loc"><strong>Ranchi</strong> — {brand.location2}</p>
-          <p className="footer-credits">© {new Date().getFullYear()} SNAG — We make people care.</p>
+          <p className="footer-loc">Creative marketing, with a little desi magic.</p>
+          <p className="footer-credits">© {new Date().getFullYear()} PERIMYSTIC — Good brands make a scene.</p>
         </div>
       </footer>
     </div>
