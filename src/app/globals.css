@@ -2314,3 +2314,26 @@ html, body { background: #f3e4c4; }
   .contact-cta-note { font-size:.67rem; letter-spacing:0; }
   .footer-mark { width:min(83vw,380px); }
 }
+
+/* Finishing pass after first real-browser screenshots. */
+@media (min-width:901px) {
+  .cinematic-copy h1 { max-width:12.7ch; font-size:clamp(4.1rem,6.2vw,7.2rem); }
+  .cinematic-copy { top:52%; }
+  .cinematic-slide-foot { pointer-events:none; }
+}
+@media (max-width:900px) {
+  .cinematic-copy h1 { max-width:13ch; }
+  .cinematic-hero-nav,.cinematic-copy,.cinematic-slide-foot { opacity:1; }
+}
+/* Reduced-motion visitors get real film stills rather than an empty green field. */
+@media (prefers-reduced-motion:reduce) {
+  .cinematic-slide[data-idx="0"] {
+    background:linear-gradient(0deg,rgba(12,39,32,.86),rgba(13,40,33,.28) 70%),url('/assets/posters/depano.png') center/cover no-repeat;
+  }
+  .cinematic-slide[data-idx="1"] {
+    background:linear-gradient(0deg,rgba(12,39,32,.86),rgba(13,40,33,.28) 70%),url('/assets/posters/burger-bae.png') center/cover no-repeat;
+  }
+  .cinematic-slide[data-idx="2"] {
+    background:linear-gradient(0deg,rgba(12,39,32,.86),rgba(13,40,33,.28) 70%),url('/assets/posters/peribest.png') center/cover no-repeat;
+  }
+}
