@@ -19,12 +19,12 @@ export type Project = {
 
 export const brand = {
   name: "PERIMYSTIC",
-  instagram: process.env.NEXT_PUBLIC_PERIMYSTIC_INSTAGRAM_LABEL || "",
-  // Only render live social CTAs after the user verifies the correct account.
-  instagramUrl: process.env.NEXT_PUBLIC_PERIMYSTIC_INSTAGRAM_URL || "",
-  // Do not carry over contact information from the previous studio.
-  // Add a verified Perimystic business email when one has been set up.
-  email: "",
+  instagram: "@perimystic",
+  instagramUrl: "https://www.instagram.com/perimystic/",
+  email: "pushkarsvashisht@gmail.com",
+  phone: "+919729317565",
+  phoneDisplay: "+91 97293 17565",
+  serviceArea: "Chandigarh & Delhi NCR",
 };
 
 // These are examples of the founder's professional work at previous companies.
