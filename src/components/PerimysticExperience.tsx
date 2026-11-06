@@ -6,7 +6,7 @@ import { Component, useCallback, useEffect, useRef, useState, type ReactNode } f
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import { ArrowRight, AtSign, Pause, Play, Volume2, VolumeX } from "lucide-react";
+import { ArrowRight, AtSign, Mail, Phone, MapPin, Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { brand, projects, services, type Project } from "@/lib/content";
 import { useScrollStore } from "@/webgl/store";
 
@@ -1045,7 +1045,6 @@ export default function PerimysticExperience() {
           const copy = slide.querySelector(".proof-copy");
           if (copy) gsap.fromTo(copy.children, { yPercent: 60, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 0.6, stagger: 0.08, ease: "power3.out", delay: 0.12 });
         };
-        revealCopy(proofSlideEls[0]);
         proofGallery.dispatchEvent(new Event("perimystic:slide-change"));
         ScrollTrigger.create({
           trigger: proofGallery, start: "top top", end: `+=${total * 150}%`, pin: true, pinSpacing: true, refreshPriority: 3,
@@ -1141,7 +1140,7 @@ export default function PerimysticExperience() {
 
       // Warm title reveal over the opening reel, after the branded preloader.
       gsap.from(".cinematic-hero-nav", { autoAlpha: 0, y: -16, duration: .7, ease: "power2.out" });
-      gsap.from(".cinematic-slide:first-of-type .cinematic-copy > *", {
+      gsap.from(".cinematic-slide[data-idx="0"] .cinematic-copy > *", {
         autoAlpha: 0, y: 28, duration: .8, stagger: .11, ease: "power3.out", delay: .15,
       });
 
@@ -1248,19 +1247,23 @@ export default function PerimysticExperience() {
                 <p className="contact-cta-kicker">Your next big idea starts here</p>
                 {process.env.NEXT_PUBLIC_PERIMYSTIC_SHEET_FORM_URL ? (
                   <ContactForm />
-                ) : brand.instagramUrl ? (
-                  <a className="contact-cta-btn" href={brand.instagramUrl} target="_blank" rel="noreferrer" data-cursor="view">
-                    Start a conversation <ArrowRight size={18} />
-                  </a>
                 ) : (
-                  <p className="contact-unconfigured">Enquiries opening soon. Our official contact details will appear here once verified.</p>
+                  <a className="contact-cta-btn" href={`mailto:${brand.email}?subject=Let's%20talk%20about%20my%20brand`} data-cursor="view">
+                    Tell us what you&apos;re building <ArrowRight size={18} />
+                  </a>
                 )}
-                {brand.instagramUrl && (
-                  <div className="contact-channels">
-                    <a href={brand.instagramUrl} target="_blank" rel="noreferrer" data-cursor="view"><AtSign size={15} />{brand.instagram || "Instagram"}</a>
-                  </div>
-                )}
-                <p className="contact-cta-note">Based in India · Collaborating everywhere</p>
+                <div className="contact-channels">
+                  <a href={`mailto:${brand.email}`} data-cursor="view">
+                    <Mail size={15} />{brand.email}
+                  </a>
+                  <a href={`tel:${brand.phone}`} data-cursor="view">
+                    <Phone size={15} />{brand.phoneDisplay}
+                  </a>
+                  <a href={brand.instagramUrl} target="_blank" rel="noreferrer" data-cursor="view">
+                    <AtSign size={15} />{brand.instagram}
+                  </a>
+                </div>
+                <p className="contact-cta-note"><MapPin size={14} aria-hidden="true" /> Available in {brand.serviceArea}</p>
               </div>
             </div>
           </div>
@@ -1276,11 +1279,13 @@ export default function PerimysticExperience() {
         </div>
         <div className="footer-meta">
           <div className="footer-links">
-            {brand.instagramUrl && <a href={brand.instagramUrl} target="_blank" rel="noreferrer" data-cursor="view">{brand.instagram || "Instagram"}</a>}
+            <a href={brand.instagramUrl} target="_blank" rel="noreferrer" data-cursor="view">{brand.instagram}</a>
+            <a href={`mailto:${brand.email}`} data-cursor="view">Email us</a>
+            <a href={`tel:${brand.phone}`} data-cursor="view">{brand.phoneDisplay}</a>
             <a href="#capabilities" data-cursor="view">Services</a>
             <a href="#contact" data-cursor="view">Get in touch</a>
           </div>
-          <p className="footer-loc">Creative marketing, with a little desi magic.</p>
+          <p className="footer-loc">Available in {brand.serviceArea} · Creative marketing with a little desi magic.</p>
           <p className="footer-credits">© {new Date().getFullYear()} PERIMYSTIC — Good brands make a scene.</p>
         </div>
       </footer>
