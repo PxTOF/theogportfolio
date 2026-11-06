@@ -2,65 +2,40 @@ import type { Metadata, Viewport } from "next";
 import { Bebas_Neue, DM_Mono, Syne } from "next/font/google";
 import "./globals.css";
 
-const display = Bebas_Neue({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: "400",
-});
+const display = Bebas_Neue({ variable: "--font-display", subsets: ["latin"], weight: "400" });
+const body = Syne({ variable: "--font-body", subsets: ["latin"] });
+const mono = DM_Mono({ variable: "--font-mono", subsets: ["latin"], weight: ["400", "500"] });
 
-const body = Syne({
-  variable: "--font-body",
-  subsets: ["latin"],
-});
-
-const mono = DM_Mono({
-  variable: "--font-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
-});
-
-const SITE_URL = "https://studio-snag.com";
+// Set NEXT_PUBLIC_SITE_URL to the final domain when it is connected to Perimystic.
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://bestone-git-perimystic-096dce-sharmapushkar2003-3749s-projects.vercel.app";
 const SITE_DESC =
-  "SNAG is a culture-led creative & content studio in Gurgaon — building creator systems, campaigns, and brand momentum. We don't just make content. We make people care.";
+  "Perimystic is a creative marketing agency for brands that want to be noticed. Social content, creator campaigns and brand launches with a little extra character.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: {
-    default: "SNAG™ — We make people care.",
-    template: "%s · SNAG™",
-  },
+  title: { default: "PERIMYSTIC — Good brands make a scene.", template: "%s · PERIMYSTIC" },
   description: SITE_DESC,
-  applicationName: "SNAG",
+  applicationName: "Perimystic",
   keywords: [
-    "creative agency", "content studio", "creator marketing", "influencer marketing",
-    "social media", "branding", "Gurgaon", "SNAG",
+    "Perimystic", "creative marketing agency", "content studio", "creator marketing",
+    "influencer campaigns", "social media", "brand launches", "India",
   ],
-  authors: [{ name: "SNAG" }],
+  authors: [{ name: "Perimystic" }],
+  icons: { icon: [{ url: "/assets/branding/perimystic-crest.webp", type: "image/webp" }], shortcut: "/assets/branding/perimystic-crest.webp" },
   openGraph: {
     type: "website",
-    siteName: "SNAG™",
-    title: "SNAG™ — We make people care.",
+    siteName: "Perimystic",
+    title: "PERIMYSTIC — Good brands make a scene.",
     description: SITE_DESC,
     url: SITE_URL,
     locale: "en_IN",
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "SNAG™ — We make people care.",
-    description: SITE_DESC,
-  },
-  icons: { icon: "/favicon.ico" },
+  twitter: { card: "summary_large_image", title: "PERIMYSTIC", description: SITE_DESC },
 };
 
-export const viewport: Viewport = {
-  themeColor: "#050505",
-};
+export const viewport: Viewport = { themeColor: "#f0dfba" };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body>{children}</body>

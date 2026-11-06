@@ -1,0 +1,44 @@
+name: Perimystic site checks
+
+on:
+  push:
+    branches: [perimystic/desi-maximalist-rebrand]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: ESLint
+        run: npm run lint
+      - name: Production build
+        run: npm run build
+      - name: Install Chromium browser for smoke tests
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.57.0
+          npx playwright install --with-deps chromium
+      - name: Browser smoke tests — desktop, tablet, mobile, reduced motion
+        run: |
+          npm run start -- -p 3000 >/tmp/perimystic-next.log 2>&1 &
+          for i in {1..40}; do
+            if curl -fsS http://127.0.0.1:3000 >/dev/null; then break; fi
+            sleep 1
+          done
+          node scripts/smoke-browser.mjs
+      - name: Attach browser screenshots for design review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: perimystic-browser-screenshots
+          path: browser-screenshots/
+          if-no-files-found: ignore

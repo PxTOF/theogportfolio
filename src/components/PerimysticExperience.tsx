@@ -6,10 +6,8 @@ import { Component, useCallback, useEffect, useRef, useState, type ReactNode } f
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import SplitType from "split-type";
-import { ArrowRight, AtSign, Mail, MapPin, MessageCircle, Pause, Phone, Play, Volume2, VolumeX } from "lucide-react";
+import { ArrowRight, AtSign, Mail, Phone, MapPin, Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { brand, projects, services, type Project } from "@/lib/content";
-import { drawSnagLogo } from "@/lib/logo";
 import { useScrollStore } from "@/webgl/store";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -17,9 +15,9 @@ gsap.registerPlugin(ScrollTrigger);
 const Scene = dynamic(() => import("@/webgl/Scene"), { ssr: false });
 
 const proofStats = [
-  ["Creators activated", "500+", "A paid creator network built to move clean — not just rack up vanity reach."],
-  ["Daily revenue", "10×", "Burger Bae went ₹30K → ₹3L a day on content built to convert, not just look cute."],
-  ["Organic posts", "360+", "One Radisson creator night, engineered to keep circulating long after last call."],
+  ["Creator relationships", "100+", "From the founder's work before Perimystic."],
+  ["Paid activations", "500+", "Creator-led activations across previous marketing roles."],
+  ["Brands built", "02", "Body Juices and Barber Syndicate — built from scratch before Perimystic."],
 ];
 type ProofSlide = {
   eyebrow: string; title: string; copy: string;
@@ -29,35 +27,31 @@ type ProofSlide = {
 // /assets/work/ — drop the renamed files there (see rename map). Copy is lean
 // placeholder; the bold/quirky rewrite happens in the text pass.
 const proofSlides: ProofSlide[] = [
-  {
-    eyebrow: "Reel 01 — Depano",
-    title: "Fixing what was stuck.",
-    copy: "A brand with no real traction, reworked into sharp positioning and content that converts.",
-    media: "/assets/work/pinned-1.mp4",
-    poster: "/assets/posters/depano.png",
-    metric: "Focus",
-    value: "Sales intent",
-  },
-  {
-    eyebrow: "Reel 02 — In the wild",
-    title: "Made to be scrolled twice.",
-    copy: "Content built to stop the thumb first, then earn the share.",
-    media: "/assets/work/pinned-2.mp4",
-    metric: "Built for",
-    value: "The share",
-  },
-  {
-    eyebrow: "Reel 03 — Attention, engineered",
-    title: "We don't chase reach. We build it.",
-    copy: "Systems that turn one-off posts into brand memory.",
-    media: "/assets/work/pinned-3.mp4",
-    metric: "Output",
-    value: "Momentum",
-  },
+  { eyebrow: "Founder work 01 — Depano", title: "A sharper point of view.",
+    copy: "Fashion positioning and content direction from a previous role.",
+    media: "/assets/work/pinned-1.mp4", poster: "/assets/posters/depano.png",
+    metric: "Focus", value: "Brand direction" },
+  { eyebrow: "Founder work 02 — Burger Bae", title: "Content with an appetite.",
+    copy: "Freelance social creative and creator-led campaigns, before Perimystic.",
+    media: "/assets/media/burger-bae.mp4", poster: "/assets/posters/burger-bae.png",
+    metric: "Discipline", value: "Content + creators" },
+  { eyebrow: "Founder work 03 — SuperProfile", title: "People make the movement.",
+    copy: "Creator partnerships and campaign systems from a previous role.",
+    media: "/assets/media/peribest.mp4", poster: "/assets/posters/peribest.png",
+    metric: "Focus", value: "Creator partnerships" },
 ];
 
-function LogoMark({ className = "", priority = false }: { className?: string; priority?: boolean }) {
-  return <Image src={brand.logo} alt="SNAG logo" width={815} height={524} priority={priority} className={className} />;
+// Approved original logo supplied by the owner and committed as a real image.
+function LogoMark({ className = "" }: { className?: string }) {
+  return (
+    <span className={`brand-artwork ${className}`}>
+      <Image
+        src="/assets/branding/perimystic-logo.webp"
+        alt="Perimystic Marketing Agency — Insight, Strategy, Impact"
+        width={1080} height={1080} priority unoptimized className="brand-artwork-image"
+      />
+    </span>
+  );
 }
 
 // A failed/lost WebGL context (or postprocessing init) must never white-screen
@@ -65,248 +59,88 @@ function LogoMark({ className = "", priority = false }: { className?: string; pr
 class WebGLBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() { return { failed: true }; }
-  componentDidCatch(err: unknown) { console.warn("[SNAG] WebGL layer disabled:", err); }
+  componentDidCatch(err: unknown) { console.warn("[PERIMYSTIC] WebGL layer disabled:", err); }
   render() { return this.state.failed ? null : this.props.children; }
 }
 
-// ─── New Preloader: star-particles converge into SNAG, tap/Enter to dismiss ──
-
+// An automatic, accessible opening card based on the actual signboard palette.
+// Uses the approved logo image once it is supplied, with a typographic placeholder
+// until then. No canvas, particles, forced click, or lingering scroll lock.
 function Preloader({ onDone }: { onDone: (skipped?: boolean) => void }) {
-  const canvasRef  = useRef<HTMLCanvasElement>(null);
-  const [progress, setProgress] = useState(0);
-  const [phase, setPhase]       = useState<"forming" | "ready" | "exiting">("forming");
-  const [visible, setVisible]   = useState(true);
-  const phaseRef = useRef<"forming" | "ready" | "exiting">("forming");
+  const [visible, setVisible] = useState(true);
+  const [exiting, setExiting] = useState(false);
+  const finished = useRef(false);
+  const finishTimer = useRef<number | null>(null);
+
+  const finish = useCallback((skipped = false) => {
+    if (finished.current) return;
+    finished.current = true;
+    try { sessionStorage.setItem("perimystic:intro", "1"); } catch { /* private browsing */ }
+    if ("scrollRestoration" in history) history.scrollRestoration = "auto";
+    document.body.style.overflow = "";
+    setExiting(true);
+    // Reveal only after the paper card has softened into the hero.
+    finishTimer.current = window.setTimeout(() => {
+      onDone(skipped);
+      setVisible(false);
+    }, skipped ? 0 : 420);
+  }, [onDone]);
 
   useEffect(() => {
-    // Already played the intro this session (reload / back / re-entry)? Skip it,
-    // reveal the site immediately, and let the browser restore scroll position.
     let seen = false;
-    try { seen = sessionStorage.getItem("snag:intro") === "1"; } catch { /* ignore */ }
-    if (seen) {
-      if ("scrollRestoration" in history) history.scrollRestoration = "auto";
-      // Deferred to avoid a synchronous setState cascade inside the effect.
-      const skip = requestAnimationFrame(() => { onDone(true); setVisible(false); });
-      return () => cancelAnimationFrame(skip);
+    try { seen = sessionStorage.getItem("perimystic:intro") === "1"; } catch { /* private browsing */ }
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Repeated visits and users who prefer less animation go straight in.
+    if (seen || reduce) {
+      const id = window.requestAnimationFrame(() => finish(true));
+      return () => window.cancelAnimationFrame(id);
     }
-    // First visit this session: reveal at the hero (top) behind the preloader.
+
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
     window.scrollTo(0, 0);
     document.body.style.overflow = "hidden";
-    let cancelled = false;
-    let raf = 0;
-
-    const run = async () => {
-      // Wait for fonts (with timeout so we never block indefinitely)
-      await Promise.race([
-        document.fonts.ready,
-        new Promise<void>((res) => setTimeout(res, 600)),
-      ]);
-      if (cancelled) return;
-
-      const canvas = canvasRef.current;
-      const ctx    = canvas?.getContext("2d");
-      if (!canvas || !ctx) return;
-
-      // Dimensions can resolve to 0 very early in mount; never let them be 0 or
-      // getImageData() throws an IndexSizeError and the loader hangs on black.
-      const rect = canvas.parentElement?.getBoundingClientRect();
-      const W = (canvas.width  = Math.max(1, Math.round(rect?.width  || window.innerWidth  || window.screen?.width  || 1280)));
-      const H = (canvas.height = Math.max(1, Math.round(rect?.height || window.innerHeight || window.screen?.height || 720)));
-
-      // ── Sample pixel positions of the real Snag wordmark ───────────────────
-      const LOGO_CY = 0.42; // vertical centre of the logo (shared with the glow)
-      const off    = document.createElement("canvas");
-      off.width = W; off.height = H;
-      const oct    = off.getContext("2d")!;
-      drawSnagLogo(oct, W, H, { widthFrac: W > H ? 0.42 : 0.78, cy: LOGO_CY, color: "#ffffff" });
-
-      const imgData = oct.getImageData(0, 0, W, H);
-      const pixels: [number, number][] = [];
-      const step = Math.max(2, Math.floor(W / 230));
-      for (let y = 0; y < H; y += step) {
-        for (let x = 0; x < W; x += step) {
-          if (imgData.data[(y * W + x) * 4 + 3] > 90) pixels.push([x, y]);
-        }
-      }
-      pixels.sort(() => Math.random() - 0.5);
-
-      const N = Math.min(1100, pixels.length);
-      type Pt = { x: number; y: number; tx: number; ty: number; r: number; spd: number; isRed: boolean };
-      const pts: Pt[] = [];
-      for (let i = 0; i < N; i++) {
-        // Start above or below the screen for a dramatic fly-in
-        const fromTop = Math.random() < 0.5;
-        pts.push({
-          x: Math.random() * W,
-          y: fromTop ? -Math.random() * H * 0.4 : H + Math.random() * H * 0.4,
-          tx: pixels[i]?.[0] ?? W / 2,
-          ty: pixels[i]?.[1] ?? H / 2,
-          r:  Math.random() * 1.8 + 0.85,
-          spd: 0.016 + Math.random() * 0.028,
-          isRed: Math.random() < 0.09,
-        });
-      }
-
-      // Background star field (static + twinkle)
-      type Star = { x: number; y: number; r: number; ph: number };
-      const stars: Star[] = Array.from({ length: 320 }, () => ({
-        x:  Math.random() * W,
-        y:  Math.random() * H,
-        r:  Math.random() * 1.0 + 0.12,
-        ph: Math.random() * Math.PI * 2,
-      }));
-
-      const TOTAL = 3.2; // seconds to form
-      let startTs = 0;
-      let t = 0;
-
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, W, H);
-
-      const draw = (now: number) => {
-        if (cancelled) return;
-        if (!startTs) startTs = now;
-        t = (now - startTs) / 1000; // real elapsed seconds — frame-rate independent
-        const prog = Math.min(1, t / TOTAL);
-        setProgress(Math.round(prog * 100));
-
-        // Trail fade instead of full clear for comet effect
-        ctx.fillStyle = "rgba(0,0,0,0.2)";
-        ctx.fillRect(0, 0, W, H);
-
-        // Background stars
-        for (const s of stars) {
-          const a = 0.12 + 0.65 * (0.5 + 0.5 * Math.sin(t * 1.7 + s.ph));
-          ctx.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`;
-          ctx.beginPath();
-          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // Particles converging into SNAG
-        const ease = Math.min(1, prog * 1.4);
-        ctx.shadowBlur = 0;
-
-        for (const p of pts) {
-          p.x += (p.tx - p.x) * p.spd * ease;
-          p.y += (p.ty - p.y) * p.spd * ease;
-
-          const alpha = 0.18 + ease * 0.82;
-
-          if (p.isRed) {
-            ctx.shadowBlur   = prog > 0.4 ? 12 : 0;
-            ctx.shadowColor  = "rgba(232,39,30,1)";
-            ctx.fillStyle    = `rgba(232,39,30,${alpha.toFixed(3)})`;
-          } else {
-            ctx.shadowBlur = 0;
-            ctx.fillStyle  = `rgba(242,242,242,${alpha.toFixed(3)})`;
-          }
-
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.shadowBlur = 0;
-
-        // Red nebula glow forms behind the wordmark as it assembles
-        if (prog > 0.52) {
-          const ga   = ((prog - 0.52) / 0.48) * 0.16;
-          const gy   = H * LOGO_CY;
-          const grd  = ctx.createRadialGradient(W / 2, gy, 0, W / 2, gy, W * 0.32);
-          grd.addColorStop(0, `rgba(232,39,30,${ga.toFixed(3)})`);
-          grd.addColorStop(1, "rgba(0,0,0,0)");
-          ctx.fillStyle = grd;
-          ctx.fillRect(0, 0, W, H);
-        }
-
-        if (prog >= 1 && phaseRef.current === "forming") {
-          setPhase("ready");
-          phaseRef.current = "ready";
-          document.body.style.overflow = "";
-        }
-        // Keep animating after assembly: particles stay pinned at their targets
-        // so the comet-trails fade out into a crisp wordmark, and the background
-        // stars keep twinkling under "SCROLL TO ENTER". Stops on unmount.
-        raf = requestAnimationFrame(draw);
-      };
-
-      raf = requestAnimationFrame(draw);
-    };
-
-    // If anything in setup throws (e.g. a 0-size canvas), never strand the user
-    // on a black screen — drop straight to the "scroll to enter" state.
-    run().catch((err) => {
-      console.warn("Preloader setup failed, entering site:", err);
-      if (cancelled) return;
-      setProgress(100);
-      setPhase("ready");
-      phaseRef.current = "ready";
-      document.body.style.overflow = "";
-    });
-
-    return () => {
-      cancelled = true;
-      cancelAnimationFrame(raf);
-      document.body.style.overflow = "";
-    };
-  }, [onDone]);
-
-  // Tap / click / keyboard to enter. Wheel scroll is intentionally ignored so
-  // the reveal starts cleanly at the hero instead of carrying scroll momentum.
-  useEffect(() => {
-    if (phase !== "ready") return;
-
-    const dismiss = () => {
-      if (phaseRef.current !== "ready") return;
-      phaseRef.current = "exiting";
-      setPhase("exiting");
-      // Remember the intro played so reloads / back don't replay it this session,
-      // and re-enable native scroll restoration for those subsequent loads.
-      try { sessionStorage.setItem("snag:intro", "1"); } catch { /* ignore */ }
-      if ("scrollRestoration" in history) history.scrollRestoration = "auto";
-      // Pin to the hero so the reveal always starts at the top (the dismiss
-      // wheel/scroll must not carry the page down into another section).
-      window.scrollTo(0, 0);
-      // Reveal the site under the starfield, then let the loader collapse into
-      // the same cosmic language as the hero instead of sliding away.
-      setTimeout(() => onDone(false), 180);
-      setTimeout(() => setVisible(false), 1180);
-    };
-
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        dismiss();
+    const introTimer = window.setTimeout(() => finish(false), 1750);
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape" || event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        finish(true);
       }
     };
-
-    window.addEventListener("pointerdown", dismiss, { once: true, passive: true });
     window.addEventListener("keydown", onKey);
     return () => {
-      window.removeEventListener("pointerdown", dismiss);
+      window.clearTimeout(introTimer);
       window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
     };
-  }, [phase, onDone]);
+  }, [finish]);
+
+  useEffect(() => () => {
+    if (finishTimer.current !== null) window.clearTimeout(finishTimer.current);
+    document.body.style.overflow = "";
+  }, []);
 
   if (!visible) return null;
 
   return (
-    <div className={`preloader preloader--${phase}`} aria-hidden="true">
-      <canvas ref={canvasRef} className="preloader-canvas" />
-      <div className="preloader-stage">
-        {phase === "ready" && (
-          <div className="preloader-enter">
-            <span className="preloader-enter-label">TAP / ENTER</span>
-            <span className="preloader-enter-arrow">+</span>
-          </div>
-        )}
+    <div className={`preloader peri-opening ${exiting ? "peri-opening--exiting" : ""}`}
+      role="dialog" aria-label="Perimystic opening animation" aria-modal="true">
+      <div className="peri-opening-frame" aria-hidden="true">
+        <span className="peri-opening-corner peri-opening-corner--tl">✥</span>
+        <span className="peri-opening-corner peri-opening-corner--tr">✥</span>
+        <span className="peri-opening-corner peri-opening-corner--bl">✥</span>
+        <span className="peri-opening-corner peri-opening-corner--br">✥</span>
       </div>
-      <div className="preloader-meta">
-        <span>Loading universe</span>
-        <strong>{String(progress).padStart(3, "0")}</strong>
+      <div className="peri-opening-content">
+        <p className="peri-opening-eyebrow">रणनीति <span aria-hidden="true">✦</span> परिणाम</p>
+        <div className="peri-opening-reveal"><LogoMark className="peri-opening-logo" /></div>
+        <div className="peri-opening-rule" aria-hidden="true"><span>✣</span></div>
+        <p className="peri-opening-subtitle">Insight <span>◆</span> Strategy <span>◆</span> Impact</p>
       </div>
-      <div className="preloader-bar" style={{ "--p": `${progress}%` } as React.CSSProperties} />
+      <button className="peri-opening-skip" type="button"
+        onClick={() => finish(true)} aria-label="Skip introduction">
+        Skip intro <ArrowRight size={15} />
+      </button>
+      <div className="peri-opening-progress" aria-hidden="true" />
     </div>
   );
 }
@@ -613,30 +447,6 @@ function SignalWave() {
   return <canvas ref={canvasRef} className="signal-wave" aria-hidden="true" />;
 }
 
-function Hero() {
-  return (
-    <section className="hero" id="intro">
-      <div className="hero-shade" aria-hidden="true" />
-      <div className="hero-inner">
-        <p className="hero-kicker">A new-age creative &amp; content studio — Gurgaon</p>
-        <div className="hero-view" aria-hidden="true" />
-        <h1 className="hero-tagline">
-          We don&apos;t just make content. <em>We make people care.</em>
-        </h1>
-      </div>
-      <aside className="hero-card">
-        <p className="hero-card-eyebrow">Studio · Gurgaon</p>
-        <div className="dashline" />
-        <p className="hero-card-body">Built for brands that want relevance, not just reach.</p>
-      </aside>
-      <div className="hero-scroll" aria-hidden="true">
-        <span className="hero-scroll-line" />
-        <span>Scroll</span>
-      </div>
-    </section>
-  );
-}
-
 function AttentionModel() {
   return (
     <section className="attention-model" id="features">
@@ -644,10 +454,10 @@ function AttentionModel() {
       <div className="attention-glow" aria-hidden="true" />
       <div className="model-title">
         <p className="section-label">What we do</p>
-        <h2>We build attention, relevance &amp; growth.</h2>
+        <h2>We make brands hard to ignore.</h2>
         <p>
-          We study how people actually behave, turn it into content systems, and make attention compound into brand
-          value. Insight, speed, execution — no fluff, no filler calendar.
+          We bring strategy, creative thinking and the right people together. From content to creator campaigns,
+          we believe brands should make something worth noticing.
         </p>
       </div>
       <div className="feature-grid">
@@ -667,42 +477,109 @@ function AttentionModel() {
   );
 }
 
+
 function ProofSlides() {
   const ref = useRef<HTMLElement>(null);
-  // Only play these full-screen reels while the gallery is on screen.
+
   useEffect(() => {
     const sec = ref.current;
     if (!sec) return;
-    const vids = Array.from(sec.querySelectorAll("video"));
-    const play = (v: HTMLVideoElement) => v.play().catch(() => { v.muted = true; v.play().catch(() => {}); });
-    // Per-video so the mobile stacked layout only decodes the on-screen reel
-    // (decoding all 3 at once was a big cause of mobile jank).
-    const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => {
-        const v = e.target as HTMLVideoElement;
-        if (e.isIntersecting) play(v); else v.pause();
-      }),
-      { threshold: 0.5 }
-    );
-    vids.forEach((v) => io.observe(v));
-    return () => io.disconnect();
+    const vids = Array.from(sec.querySelectorAll<HTMLVideoElement>(".proof-slide video"));
+    const mobile = window.matchMedia("(max-width: 900px)").matches;
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Hidden desktop layers must never steal keyboard or screen reader focus.
+    sec.querySelectorAll<HTMLElement>(".proof-slide").forEach((slide, i) => {
+      slide.inert = !mobile && i !== 0;
+      if (!mobile && i !== 0) slide.setAttribute("aria-hidden", "true");
+      else slide.removeAttribute("aria-hidden");
+    });
+    const play = (v: HTMLVideoElement) => {
+      if (reduceMotion || document.hidden) return;
+      v.muted = true;
+      v.play().catch(() => { /* Mobile autoplay can be declined */ });
+    };
+    const syncDesktop = () => {
+      if (mobile) return;
+      vids.forEach((v) => {
+        if (v.closest<HTMLElement>(".proof-slide")?.dataset.active === "true" &&
+            sec.getBoundingClientRect().bottom > 0 &&
+            sec.getBoundingClientRect().top < window.innerHeight) play(v);
+        else v.pause();
+      });
+    };
+    // On phones the slides become a native vertical stack; decode only a reel
+    // in view, rather than three layered full-screen videos at once.
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        const v = entry.target as HTMLVideoElement;
+        if (mobile) {
+          if (entry.isIntersecting && entry.intersectionRatio >= .45) play(v);
+          else v.pause();
+        } else {
+          syncDesktop();
+        }
+      }
+    }, { threshold: [0, .45, .8] });
+    vids.forEach(v => observer.observe(v));
+    const onSlideChange = () => syncDesktop();
+    const onVisibility = () => {
+      if (document.hidden) vids.forEach(v => v.pause());
+      else syncDesktop();
+    };
+    sec.addEventListener("perimystic:slide-change", onSlideChange);
+    document.addEventListener("visibilitychange", onVisibility);
+    syncDesktop();
+    return () => {
+      observer.disconnect();
+      sec.removeEventListener("perimystic:slide-change", onSlideChange);
+      document.removeEventListener("visibilitychange", onVisibility);
+      vids.forEach(v => v.pause());
+    };
   }, []);
+
   return (
-    <section ref={ref} className="proof-slides" id="proof-gallery" aria-label="Attention proof">
+    <section ref={ref} className="proof-slides cinematic-hero" id="proof-gallery"
+      aria-label="Perimystic creative marketing showcase">
+      <span id="intro" className="cinematic-top-anchor" aria-hidden="true" />
+      <nav className="cinematic-hero-nav" aria-label="Main navigation">
+        <a className="cinematic-brand" href="#intro" aria-label="Perimystic, back to top">
+          <Image src="/assets/branding/perimystic-crest.webp" alt="" width={80} height={64} priority unoptimized />
+          <span className="cinematic-brand-name">PERIMYSTIC <small>MARKETING AGENCY</small></span>
+        </a>
+        <div className="cinematic-nav-links">
+          <span className="cinematic-location">CHANDIGARH <i>◆</i> DELHI NCR</span>
+          <a href="#capabilities">WHAT WE DO</a>
+          <a className="cinematic-nav-cta" href="#contact">LET&apos;S TALK <ArrowRight size={15} /></a>
+        </div>
+      </nav>
       {proofSlides.map((slide, i) => (
-        <article className="proof-slide" key={slide.title} data-idx={i} style={{ opacity: i === 0 ? 1 : 0 }}>
-          <video src={slide.media} poster={slide.poster} muted loop playsInline preload="none" aria-hidden="true" />
+        <article className="proof-slide cinematic-slide" key={slide.title}
+          data-idx={i} data-active={i === 0 ? "true" : "false"}
+          style={{ opacity: i === 0 ? 1 : 0 }}>
+          <video src={slide.media} poster={slide.poster}
+            muted loop playsInline preload={i === 0 ? "metadata" : "none"}
+            disablePictureInPicture aria-hidden="true" />
           <div className="proof-vignette" aria-hidden="true" />
-          <div className="proof-copy">
-            <p>{slide.eyebrow}</p>
-            <h2>{slide.title}</h2>
-            <span>{slide.copy}</span>
-          </div>
-          <div className="proof-chip" aria-hidden="true">
-            <div>
-              <strong>{slide.metric}</strong>
-              <b>{slide.value}</b>
+          <div className="cinematic-frame" aria-hidden="true" />
+          <div className="proof-copy cinematic-copy">
+            <p className="cinematic-eyebrow">{slide.eyebrow}</p>
+            {i === 0 ? (
+              <h1>GOOD BRANDS <em>MAKE A SCENE.</em></h1>
+            ) : (
+              <h2>{slide.title}</h2>
+            )}
+            <span>{i === 0 ? "We turn ideas into stories people notice. Social, creators and campaigns with real character." : slide.copy}</span>
+            <div className="cinematic-actions">
+              <a href="#contact" className="cinematic-primary-cta">
+                BUILD WITH US <ArrowRight size={17} />
+              </a>
+              <a href="#cards-section" className="cinematic-secondary-cta">EXPLORE THE WORK</a>
             </div>
+          </div>
+          <div className="cinematic-slide-foot">
+            <span>SELECTED FOUNDER WORK <i>◆</i> BEFORE PERIMYSTIC</span>
+            <span className="cinematic-slide-index">0{i + 1}<b>/</b>03</span>
+            <span>SCROLL TO EXPLORE <span className="cinematic-scroll-arrow">↓</span></span>
           </div>
         </article>
       ))}
@@ -715,11 +592,11 @@ function WorkShowcase() {
     <>
       <section className="work-product" id="product">
         <div className="work-intro">
-          <p className="section-label">The receipts</p>
-          <h2>We don&apos;t show everything. Just what moved the needle.</h2>
+          <p className="section-label">The founder’s earlier work</p>
+          <h2>The work before the name.</h2>
           <p>
-            Open the work, play the reels, and see what actually moved when content was treated as a system, not a
-            calendar.
+            Selected work from previous roles and freelance projects. These are founder experience examples,
+            not projects contracted through Perimystic.
           </p>
           <div className="work-intro-cue" aria-hidden="true">
             <span>Drag / scroll</span>
@@ -738,19 +615,19 @@ function WorkShowcase() {
   );
 }
 
-const MARQUEE_TOP    = ["CONTENT", "CREATORS", "CAMPAIGNS", "BRANDING", "GROWTH", "REELS", "STRATEGY"];
-const MARQUEE_BOTTOM = ["SOCIAL",  "INFLUENCE", "PRODUCTION", "DESIGN",  "PAID ADS", "CULTURE", "LAUNCHES"];
+const MARQUEE_TOP = ["CONTENT", "CREATORS", "CAMPAIGNS", "BOLD IDEAS", "SOCIAL", "REELS", "CULTURE"];
+const MARQUEE_BOTTOM = ["THODA HATKE", "FULL POWER", "BRAND LOVE", "CREATIVE", "STORIES", "LAUNCHES"];
 
 function WhatWeDoMarquee() {
   return (
     <section className="marquee-sec" id="capabilities">
       <div className="marquee-head">
-        <p className="section-label">Everything under one roof</p>
+        <p className="section-label">Our kind of work</p>
         <h2>
-          We do a lot. <em>On purpose.</em>
+          Less noise. <em>More feeling.</em>
         </h2>
         <p className="marquee-sub">
-          One team for content, creators, and growth — so the brand actually moves as one thing.
+          Strategy, content and creators working together, with one distinctive point of view.
         </p>
       </div>
       <div className="marquee" aria-hidden="true">
@@ -798,7 +675,7 @@ function LatestReel() {
     // Public Behold feed id (same one in the widget embed) — hardcoded as a
     // default so the card works on Vercel even without the env var set; the env
     // var overrides it if present.
-    const id = process.env.NEXT_PUBLIC_BEHOLD_FEED_ID || "bDimAptWlG8fo0gknVwk";
+    const id = process.env.NEXT_PUBLIC_PERIMYSTIC_BEHOLD_FEED_ID;
     if (!id) return;
     let alive = true;
     fetch(`https://feeds.behold.so/${id}?t=${Date.now()}`, { cache: "no-store" })
@@ -820,7 +697,7 @@ function LatestReel() {
             ? (pick.mediaUrl ?? pick.media_url ?? "")
             : (stableImg ?? pick.mediaUrl ?? pick.media_url ?? ""),
           thumb: pick.thumbnailUrl ?? pick.thumbnail_url,
-          permalink: pick.permalink ?? "https://instagram.com/studio.snag",
+          permalink: pick.permalink ?? brand.instagramUrl,
           isVideo,
         });
       })
@@ -848,7 +725,7 @@ function LatestReel() {
 
   const media = post?.media || "/assets/work/superprofile.mp4";
   const isVideo = post ? post.isVideo : true;
-  const href = post?.permalink ?? "https://instagram.com/studio.snag";
+  const href = post?.permalink || brand.instagramUrl || "#work";
 
   return (
     <a
@@ -874,9 +751,9 @@ function LatestReel() {
           <span className="latest-reel-scrim" aria-hidden="true" />
           <span className="latest-reel-glare" aria-hidden="true" />
         </div>
-        <span className="latest-reel-live"><i />Live</span>
+        <span className="latest-reel-live"><i />{post ? "Latest" : "Archive"}</span>
         <span className="latest-reel-meta">
-          <strong>Latest on Instagram</strong>
+          <strong>{post ? "Latest on Instagram" : "Founder work"}</strong>
           <em>{brand.instagram}</em>
         </span>
       </div>
@@ -893,7 +770,7 @@ function ContactForm() {
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
-    const url = process.env.NEXT_PUBLIC_SHEET_FORM_URL;
+    const url = process.env.NEXT_PUBLIC_PERIMYSTIC_SHEET_FORM_URL;
     const fd = new FormData(form);
     const data = new URLSearchParams();
     fd.forEach((v, k) => data.append(k, String(v)));
@@ -923,7 +800,7 @@ function ContactForm() {
       </button>
       {state === "sent" && <p className="contact-form-msg" role="status">Got it — we&apos;ll reply within a day.</p>}
       {state === "error" && (
-        <p className="contact-form-msg contact-form-msg--err" role="status">Couldn&apos;t send — email {brand.email} instead.</p>
+        <p className="contact-form-msg contact-form-msg--err" role="status">Couldn&apos;t send. Please try our Instagram instead.</p>
       )}
     </form>
   );
@@ -934,9 +811,9 @@ function OpenWeightProof() {
     <section className="open-proof" id="studio">
       <div className="open-proof-head">
         <div className="open-proof-head-copy">
-          <p className="section-label">Who we are</p>
+          <p className="section-label">Meet the new kid in town</p>
           <h2 className="open-proof-title">
-            We don&apos;t chase reach. <em>We engineer attention</em> that turns into brand value.
+            Same internet. <em>Different kind of energy.</em>
           </h2>
         </div>
         <LatestReel />
@@ -945,12 +822,12 @@ function OpenWeightProof() {
       <div className="manifesto">
         <div className="manifesto-lead">
           <p>
-            A hybrid of creators, strategists, and operators — we started in social and grew into a
-            full-stack studio for talent, influence, and cultural impact.
+            Perimystic is a founder-led creative marketing agency for consumer brands.
+            We bring social content, creator thinking and campaign ideas together — with a distinctly Indian eye for colour and culture.
           </p>
           <p className="manifesto-sign">
-            No outdated playbooks. No vanity metrics. Just sharp strategy, strong execution, and{" "}
-            <span>content that actually moves.</span>
+            Not here to sell a hundred vague services. Here to make sharp work, execute it properly,
+            and give brands <span>something to be remembered for.</span>
           </p>
         </div>
         <ol className="manifesto-points">
@@ -966,14 +843,14 @@ function OpenWeightProof() {
       <div className="capabilities-block">
         <div className="capabilities-head">
           <p className="capabilities-label">What we do</p>
-          <h3 className="capabilities-title">One team. The full stack.</h3>
+          <h3 className="capabilities-title">Three things. Done well.</h3>
           <p className="capabilities-intro">
-            Content, creators, and growth under a single roof — so your brand moves as one thing,
-            not five disconnected vendors.
+            Social and content management, creator campaigns, and brand launch creative.
+              Built with the right specialists for each project.
           </p>
         </div>
         <div className="service-grid">
-          {services.slice(0, 8).map((service) => {
+          {services.map((service) => {
             const Icon = service.icon;
             return (
               <article className="service-card" key={service.title}>
@@ -991,47 +868,9 @@ function OpenWeightProof() {
 
 // Mute-by-default ambient space audio. The file is a short loop in /public,
 // and playback only starts after the user explicitly taps the corner toggle.
-function AudioToggle() {
-  const ref = useRef<HTMLAudioElement>(null);
-  const [on, setOn] = useState(false);
-
-  const toggle = async () => {
-    const a = ref.current;
-    if (!a) return;
-    if (on) {
-      a.pause();
-      setOn(false);
-    } else {
-      a.volume = 0.32;
-      try {
-        await a.play();
-        setOn(true);
-      } catch {
-        setOn(false);
-      }
-    }
-  };
-
-  return (
-    <>
-      <audio ref={ref} src="/assets/audio/snag-ambient.wav" loop preload="none" />
-      <button
-        type="button"
-        className="audio-toggle"
-        data-on={on}
-        onClick={toggle}
-        aria-label={on ? "Turn ambient sound off" : "Turn ambient sound on"}
-      >
-        {on ? <Volume2 size={14} /> : <VolumeX size={14} />}
-        <span className="audio-eq" aria-hidden="true"><i /><i /><i /><i /></span>
-      </button>
-    </>
-  );
-}
-
 // ─── Root component ────────────────────────────────────────────────────────────
 
-export default function SnagExperience() {
+export default function PerimysticExperience() {
   const appRef  = useRef<HTMLDivElement>(null);
   const [webglOn, setWebglOn]   = useState(false);
   const [siteReady, setSiteReady] = useState(false);
@@ -1137,29 +976,30 @@ export default function SnagExperience() {
       gsap.ticker.lagSmoothing(0);
     }
 
+    let removeAttentionListeners = () => {};
+    const context = gsap.context(() => {
     if (!reduceMotion) {
       gsap.to(".scroll-progress", {
         scaleX: 1, ease: "none",
         scrollTrigger: { trigger: document.documentElement, start: 0, end: "max", scrub: 0.2 },
       });
 
-      gsap.to(".hero-inner", {
-        yPercent: -8, autoAlpha: 0.15, ease: "none",
-        scrollTrigger: { trigger: ".hero", start: "30% top", end: "bottom top", scrub: true },
-      });
-
       const attentionEl = document.querySelector<HTMLElement>(".attention-model");
       const glowEl      = document.querySelector<HTMLElement>(".attention-glow");
       if (attentionEl && glowEl) {
-        attentionEl.addEventListener("mousemove", (e) => {
+        const onAttentionMove = (e: MouseEvent) => {
           const rect = attentionEl.getBoundingClientRect();
-          const x    = (((e as MouseEvent).clientX - rect.left) / rect.width)  * 100;
-          const y    = (((e as MouseEvent).clientY - rect.top)  / rect.height) * 100;
+          const x = ((e.clientX - rect.left) / rect.width) * 100;
+          const y = ((e.clientY - rect.top) / rect.height) * 100;
           gsap.to(glowEl, { "--glow-x": `${x.toFixed(1)}%`, "--glow-y": `${y.toFixed(1)}%`, "--glow-opacity": "1", duration: 0.5, ease: "power2.out" });
-        });
-        attentionEl.addEventListener("mouseleave", () => {
-          gsap.to(glowEl, { "--glow-opacity": "0", duration: 0.7 });
-        });
+        };
+        const onAttentionLeave = () => gsap.to(glowEl, { "--glow-opacity": "0", duration: 0.7 });
+        attentionEl.addEventListener("mousemove", onAttentionMove);
+        attentionEl.addEventListener("mouseleave", onAttentionLeave);
+        removeAttentionListeners = () => {
+          attentionEl.removeEventListener("mousemove", onAttentionMove);
+          attentionEl.removeEventListener("mouseleave", onAttentionLeave);
+        };
       }
 
       // Proof gallery
@@ -1173,7 +1013,7 @@ export default function SnagExperience() {
           const copy = slide.querySelector(".proof-copy");
           if (copy) gsap.fromTo(copy.children, { yPercent: 60, autoAlpha: 0 }, { yPercent: 0, autoAlpha: 1, duration: 0.6, stagger: 0.08, ease: "power3.out", delay: 0.12 });
         };
-        revealCopy(proofSlideEls[0]);
+        proofGallery.dispatchEvent(new Event("perimystic:slide-change"));
         ScrollTrigger.create({
           trigger: proofGallery, start: "top top", end: `+=${total * 150}%`, pin: true, pinSpacing: true, refreshPriority: 3,
           onUpdate: (self) => {
@@ -1187,6 +1027,13 @@ export default function SnagExperience() {
               { autoAlpha: 1, clipPath: down ? "inset(100% 0% 0% 0%)" : "inset(0% 0% 100% 0%)" },
               { clipPath: "inset(0% 0% 0% 0%)", duration: 0.8, ease: "power3.inOut", overwrite: true }
             );
+            outgoing.dataset.active = "false";
+            incoming.dataset.active = "true";
+            outgoing.inert = true;
+            incoming.inert = false;
+            outgoing.setAttribute("aria-hidden", "true");
+            incoming.removeAttribute("aria-hidden");
+            proofGallery.dispatchEvent(new Event("perimystic:slide-change"));
             revealCopy(incoming);
             current = idx;
           },
@@ -1199,11 +1046,16 @@ export default function SnagExperience() {
       const cardsSection = document.getElementById("cards-section");
       const cardsTrack   = document.getElementById("cards-track");
       if (cardsSection && cardsTrack && !isMobile) {
-        const totalScrollWidth = cardsTrack.scrollWidth - window.innerWidth;
-        if (totalScrollWidth > 0) {
+        const measureOverflow = () => Math.max(0, cardsTrack.scrollWidth - window.innerWidth);
+        if (measureOverflow() > 0) {
           gsap.to(cardsTrack, {
-            x: -totalScrollWidth, ease: "none",
-            scrollTrigger: { trigger: cardsSection, start: "top top", end: `+=${totalScrollWidth}`, pin: true, scrub: 1, anticipatePin: 1, refreshPriority: 2 },
+            x: () => -measureOverflow(), ease: "none",
+            scrollTrigger: {
+              trigger: cardsSection, start: "top top",
+              end: () => `+=${measureOverflow()}`,
+              pin: true, scrub: 1, anticipatePin: 1,
+              invalidateOnRefresh: true, refreshPriority: 2,
+            },
           });
         }
       }
@@ -1258,11 +1110,13 @@ export default function SnagExperience() {
           .to(stars, { autoAlpha: 0.18, duration: 0.5, ease: "power2.out" }, 1.1);
       }
 
-      // Hero entrance (plays right as preloader exits)
-      gsap.from(".hero-kicker",  { autoAlpha: 0, y: 24, duration: 0.7,  ease: "power2.out" });
-      gsap.from(".hero-tagline", { autoAlpha: 0, y: 30, duration: 0.85, ease: "power2.out", delay: 0.25 });
-      gsap.from(".hero-card",    { autoAlpha: 0, y: 24, duration: 0.7,  ease: "power2.out", delay: 0.4  });
-      gsap.from(".hero-scroll",  { autoAlpha: 0, duration: 0.7, ease: "power2.out", delay: 0.55 });
+      // Desktop only: avoid blank entrance frames on touchscreens and tablets.
+      if (!isMobile) {
+        gsap.from(".cinematic-hero-nav", { autoAlpha: 0, y: -16, duration: .6, ease: "power2.out" });
+        gsap.from('.cinematic-slide[data-idx="0"] .cinematic-copy > *', {
+          autoAlpha: 0, y: 20, duration: .65, stagger: .09, ease: "power3.out", delay: .05,
+        });
+      }
 
       // Stat count-up
       gsap.utils.toArray<HTMLElement>(".feature-card strong").forEach((el) => {
@@ -1278,17 +1132,13 @@ export default function SnagExperience() {
         });
       });
 
+      // Avoid DOM-mutating SplitType wrappers that break on remount/resizing.
       document.querySelectorAll<HTMLElement>("h2").forEach((el) => {
-        if (el.closest(".hero") || el.closest(".proof-slide") || el.closest(".contact")) return;
-        const split = new SplitType(el, { types: "lines" });
-        const lines = split.lines ?? [];
-        lines.forEach((line) => {
-          const wrap = document.createElement("span");
-          Object.assign(wrap.style, { display: "block", overflow: "hidden" });
-          line.parentElement?.insertBefore(wrap, line);
-          wrap.appendChild(line);
+        if (el.closest(".hero, .proof-slide, .contact")) return;
+        gsap.from(el, {
+          y: 28, autoAlpha: 0, duration: 0.8, ease: "power3.out",
+          scrollTrigger: { trigger: el, start: "top 88%", once: true },
         });
-        gsap.from(lines, { yPercent: 110, duration: 0.95, stagger: 0.09, ease: "expo.out", scrollTrigger: { trigger: el, start: "top 88%" } });
       });
 
       document.querySelectorAll<HTMLElement>(".section-label").forEach((el) => {
@@ -1301,9 +1151,11 @@ export default function SnagExperience() {
 
       ScrollTrigger.refresh();
     }
+    }, appRef);
 
     return () => {
-      ScrollTrigger.getAll().forEach((t) => t.kill());
+      context.revert();
+      removeAttentionListeners();
       if (lenis) { gsap.ticker.remove(raf); lenis.destroy(); }
     };
   }, [siteReady]);
@@ -1326,14 +1178,12 @@ export default function SnagExperience() {
       <Preloader onDone={handlePreloaderDone} />
       <ScrollIndicator />
       <Cursor />
-      <AudioToggle />
       {/* Cinematic grade: vignette + in-palette lens bloom + drifting leak. */}
       <div className="cinema" aria-hidden="true" />
       <div className="grain" aria-hidden="true" />
       <main>
-        <Hero />
-        <AttentionModel />
         <ProofSlides />
+        <AttentionModel />
         <WorkShowcase />
         <WhatWeDoMarquee />
         <OpenWeightProof />
@@ -1358,7 +1208,7 @@ export default function SnagExperience() {
                     Let&apos;s build something that actually <em>moves.</em>
                   </h2>
                   <p className="contact-flex">
-                    This was just supposed to be a portfolio — and we built it <em>like this</em>. Now imagine what we&apos;d do with your brand.
+                    Got a brand that deserves more personality? <em>Tell us what you&apos;re building.</em>
                   </p>
                 </div>
               </div>
@@ -1367,22 +1217,26 @@ export default function SnagExperience() {
                 <span className="contact-tick contact-tick--tr" aria-hidden="true" />
                 <span className="contact-tick contact-tick--bl" aria-hidden="true" />
                 <span className="contact-tick contact-tick--br" aria-hidden="true" />
-                <p className="contact-cta-kicker">Tell us what you&apos;re building</p>
-                <ContactForm />
-                <a className="contact-cta-btn contact-cta-btn--ghost" href={`https://wa.me/${brand.phone.replace(/[^\d]/g, "")}`} target="_blank" rel="noreferrer" data-cursor="view">
-                  <MessageCircle size={17} />WhatsApp instead
-                </a>
+                <p className="contact-cta-kicker">Your next big idea starts here</p>
+                {process.env.NEXT_PUBLIC_PERIMYSTIC_SHEET_FORM_URL ? (
+                  <ContactForm />
+                ) : (
+                  <a className="contact-cta-btn" href={`mailto:${brand.email}?subject=Let's%20talk%20about%20my%20brand`} data-cursor="view">
+                    Tell us what you&apos;re building <ArrowRight size={18} />
+                  </a>
+                )}
                 <div className="contact-channels">
-                  <a href={`mailto:${brand.email}`} data-cursor="view"><Mail size={15} />{brand.email}</a>
-                  <a href="https://instagram.com/studio.snag" target="_blank" rel="noreferrer" data-cursor="view"><AtSign size={15} />{brand.instagram}</a>
-                  <a href={`tel:${brand.phone.replace(/\s/g, "")}`} data-cursor="view"><Phone size={15} />{brand.phone}</a>
-                  <a href={`tel:${brand.phone2.replace(/\s/g, "")}`} data-cursor="view"><Phone size={15} />{brand.phone2}</a>
+                  <a href={`mailto:${brand.email}`} data-cursor="view">
+                    <Mail size={15} />{brand.email}
+                  </a>
+                  <a href={`tel:${brand.phone}`} data-cursor="view">
+                    <Phone size={15} />{brand.phoneDisplay}
+                  </a>
+                  <a href={brand.instagramUrl} target="_blank" rel="noreferrer" data-cursor="view">
+                    <AtSign size={15} />{brand.instagram}
+                  </a>
                 </div>
-                <div className="contact-offices">
-                  <div className="contact-office"><MapPin size={15} /><span><strong>Gurgaon</strong>{brand.location}</span></div>
-                  <div className="contact-office"><MapPin size={15} /><span><strong>Ranchi</strong>{brand.location2}</span></div>
-                </div>
-                <p className="contact-cta-note">Limited projects. Built with intent — usually a reply within a day.</p>
+                <p className="contact-cta-note"><MapPin size={14} aria-hidden="true" /> Available in {brand.serviceArea}</p>
               </div>
             </div>
           </div>
@@ -1398,14 +1252,14 @@ export default function SnagExperience() {
         </div>
         <div className="footer-meta">
           <div className="footer-links">
-            <a href={`mailto:${brand.email}`} data-cursor="view">{brand.email}</a>
-            <a href="https://instagram.com/studio.snag" target="_blank" rel="noreferrer" data-cursor="view">{brand.instagram}</a>
-            <a href={`tel:${brand.phone.replace(/\s/g, "")}`} data-cursor="view">{brand.phone}</a>
-            <a href={`tel:${brand.phone2.replace(/\s/g, "")}`} data-cursor="view">{brand.phone2}</a>
+            <a href={brand.instagramUrl} target="_blank" rel="noreferrer" data-cursor="view">{brand.instagram}</a>
+            <a href={`mailto:${brand.email}`} data-cursor="view">Email us</a>
+            <a href={`tel:${brand.phone}`} data-cursor="view">{brand.phoneDisplay}</a>
+            <a href="#capabilities" data-cursor="view">Services</a>
+            <a href="#contact" data-cursor="view">Get in touch</a>
           </div>
-          <p className="footer-loc"><strong>Gurgaon</strong> — {brand.location}</p>
-          <p className="footer-loc"><strong>Ranchi</strong> — {brand.location2}</p>
-          <p className="footer-credits">© {new Date().getFullYear()} SNAG — We make people care.</p>
+          <p className="footer-loc">Available in {brand.serviceArea} · Creative marketing with a little desi magic.</p>
+          <p className="footer-credits">© {new Date().getFullYear()} PERIMYSTIC — Good brands make a scene.</p>
         </div>
       </footer>
     </div>
