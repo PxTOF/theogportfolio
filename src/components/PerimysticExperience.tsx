@@ -6,10 +6,8 @@ import { Component, useCallback, useEffect, useRef, useState, type ReactNode } f
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
-import SplitType from "split-type";
 import { ArrowRight, AtSign, Pause, Play, Volume2, VolumeX } from "lucide-react";
 import { brand, projects, services, type Project } from "@/lib/content";
-import { drawPerimysticLogo } from "@/lib/logo";
 import { useScrollStore } from "@/webgl/store";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -986,6 +984,8 @@ export default function PerimysticExperience() {
       gsap.ticker.lagSmoothing(0);
     }
 
+    let removeAttentionListeners = () => {};
+    const context = gsap.context(() => {
     if (!reduceMotion) {
       gsap.to(".scroll-progress", {
         scaleX: 1, ease: "none",
@@ -1000,15 +1000,19 @@ export default function PerimysticExperience() {
       const attentionEl = document.querySelector<HTMLElement>(".attention-model");
       const glowEl      = document.querySelector<HTMLElement>(".attention-glow");
       if (attentionEl && glowEl) {
-        attentionEl.addEventListener("mousemove", (e) => {
+        const onAttentionMove = (e: MouseEvent) => {
           const rect = attentionEl.getBoundingClientRect();
-          const x    = (((e as MouseEvent).clientX - rect.left) / rect.width)  * 100;
-          const y    = (((e as MouseEvent).clientY - rect.top)  / rect.height) * 100;
+          const x = ((e.clientX - rect.left) / rect.width) * 100;
+          const y = ((e.clientY - rect.top) / rect.height) * 100;
           gsap.to(glowEl, { "--glow-x": `${x.toFixed(1)}%`, "--glow-y": `${y.toFixed(1)}%`, "--glow-opacity": "1", duration: 0.5, ease: "power2.out" });
-        });
-        attentionEl.addEventListener("mouseleave", () => {
-          gsap.to(glowEl, { "--glow-opacity": "0", duration: 0.7 });
-        });
+        };
+        const onAttentionLeave = () => gsap.to(glowEl, { "--glow-opacity": "0", duration: 0.7 });
+        attentionEl.addEventListener("mousemove", onAttentionMove);
+        attentionEl.addEventListener("mouseleave", onAttentionLeave);
+        removeAttentionListeners = () => {
+          attentionEl.removeEventListener("mousemove", onAttentionMove);
+          attentionEl.removeEventListener("mouseleave", onAttentionLeave);
+        };
       }
 
       // Proof gallery
@@ -1048,11 +1052,16 @@ export default function PerimysticExperience() {
       const cardsSection = document.getElementById("cards-section");
       const cardsTrack   = document.getElementById("cards-track");
       if (cardsSection && cardsTrack && !isMobile) {
-        const totalScrollWidth = cardsTrack.scrollWidth - window.innerWidth;
-        if (totalScrollWidth > 0) {
+        const measureOverflow = () => Math.max(0, cardsTrack.scrollWidth - window.innerWidth);
+        if (measureOverflow() > 0) {
           gsap.to(cardsTrack, {
-            x: -totalScrollWidth, ease: "none",
-            scrollTrigger: { trigger: cardsSection, start: "top top", end: `+=${totalScrollWidth}`, pin: true, scrub: 1, anticipatePin: 1, refreshPriority: 2 },
+            x: () => -measureOverflow(), ease: "none",
+            scrollTrigger: {
+              trigger: cardsSection, start: "top top",
+              end: () => `+=${measureOverflow()}`,
+              pin: true, scrub: 1, anticipatePin: 1,
+              invalidateOnRefresh: true, refreshPriority: 2,
+            },
           });
         }
       }
@@ -1127,17 +1136,13 @@ export default function PerimysticExperience() {
         });
       });
 
+      // Avoid DOM-mutating SplitType wrappers that break on remount/resizing.
       document.querySelectorAll<HTMLElement>("h2").forEach((el) => {
-        if (el.closest(".hero") || el.closest(".proof-slide") || el.closest(".contact")) return;
-        const split = new SplitType(el, { types: "lines" });
-        const lines = split.lines ?? [];
-        lines.forEach((line) => {
-          const wrap = document.createElement("span");
-          Object.assign(wrap.style, { display: "block", overflow: "hidden" });
-          line.parentElement?.insertBefore(wrap, line);
-          wrap.appendChild(line);
+        if (el.closest(".hero, .proof-slide, .contact")) return;
+        gsap.from(el, {
+          y: 28, autoAlpha: 0, duration: 0.8, ease: "power3.out",
+          scrollTrigger: { trigger: el, start: "top 88%", once: true },
         });
-        gsap.from(lines, { yPercent: 110, duration: 0.95, stagger: 0.09, ease: "expo.out", scrollTrigger: { trigger: el, start: "top 88%" } });
       });
 
       document.querySelectorAll<HTMLElement>(".section-label").forEach((el) => {
@@ -1150,9 +1155,11 @@ export default function PerimysticExperience() {
 
       ScrollTrigger.refresh();
     }
+    }, appRef);
 
     return () => {
-      ScrollTrigger.getAll().forEach((t) => { if (t.trigger && appRef.current?.contains(t.trigger)) t.kill(); });
+      context.revert();
+      removeAttentionListeners();
       if (lenis) { gsap.ticker.remove(raf); lenis.destroy(); }
     };
   }, [siteReady]);
