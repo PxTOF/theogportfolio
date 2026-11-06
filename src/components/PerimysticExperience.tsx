@@ -43,8 +43,23 @@ const proofSlides: ProofSlide[] = [
     metric: "Focus", value: "Creator partnerships" },
 ];
 
+// The authentic logo remains a supplied brand asset, never a CSS imitation.
+// Until the standalone source image is added, show a restrained text label.
+// Configure NEXT_PUBLIC_PERIMYSTIC_LOGO_SRC when the approved asset is uploaded.
 function LogoMark({ className = "" }: { className?: string }) {
-  return <span className={`perimystic-mark ${className}`} aria-label="Perimystic"><span>PERI</span><span>MYSTIC</span><i aria-hidden="true">✺</i></span>;
+  const logoSrc = process.env.NEXT_PUBLIC_PERIMYSTIC_LOGO_SRC;
+  return (
+    <span className={`brand-artwork ${className}`}>
+      {logoSrc ? (
+        <Image src={logoSrc} alt="Perimystic Marketing Agency logo" width={960} height={720} priority unoptimized className="brand-artwork-image" />
+      ) : (
+        <span className="brand-artwork-placeholder">
+          <strong>Perimystic</strong>
+          <small>MARKETING AGENCY</small>
+        </span>
+      )}
+    </span>
+  );
 }
 
 // A failed/lost WebGL context (or postprocessing init) must never white-screen
@@ -56,244 +71,84 @@ class WebGLBoundary extends Component<{ children: ReactNode }, { failed: boolean
   render() { return this.state.failed ? null : this.props.children; }
 }
 
-// ─── New Preloader: star-particles converge into PERIMYSTIC, tap/Enter to dismiss ──
-
+// An automatic, accessible opening card based on the actual signboard palette.
+// Uses the approved logo image once it is supplied, with a typographic placeholder
+// until then. No canvas, particles, forced click, or lingering scroll lock.
 function Preloader({ onDone }: { onDone: (skipped?: boolean) => void }) {
-  const canvasRef  = useRef<HTMLCanvasElement>(null);
-  const [progress, setProgress] = useState(0);
-  const [phase, setPhase]       = useState<"forming" | "ready" | "exiting">("forming");
-  const [visible, setVisible]   = useState(true);
-  const phaseRef = useRef<"forming" | "ready" | "exiting">("forming");
+  const [visible, setVisible] = useState(true);
+  const [exiting, setExiting] = useState(false);
+  const finished = useRef(false);
+  const finishTimer = useRef<number | null>(null);
+
+  const finish = useCallback((skipped = false) => {
+    if (finished.current) return;
+    finished.current = true;
+    try { sessionStorage.setItem("perimystic:intro", "1"); } catch { /* private browsing */ }
+    if ("scrollRestoration" in history) history.scrollRestoration = "auto";
+    document.body.style.overflow = "";
+    setExiting(true);
+    // Reveal only after the paper card has softened into the hero.
+    finishTimer.current = window.setTimeout(() => {
+      onDone(skipped);
+      setVisible(false);
+    }, skipped ? 0 : 420);
+  }, [onDone]);
 
   useEffect(() => {
-    // Already played the intro this session (reload / back / re-entry)? Skip it,
-    // reveal the site immediately, and let the browser restore scroll position.
     let seen = false;
-    try { seen = sessionStorage.getItem("perimystic:intro") === "1"; } catch { /* ignore */ }
-    if (seen) {
-      if ("scrollRestoration" in history) history.scrollRestoration = "auto";
-      // Deferred to avoid a synchronous setState cascade inside the effect.
-      const skip = requestAnimationFrame(() => { onDone(true); setVisible(false); });
-      return () => cancelAnimationFrame(skip);
+    try { seen = sessionStorage.getItem("perimystic:intro") === "1"; } catch { /* private browsing */ }
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Repeated visits and users who prefer less animation go straight in.
+    if (seen || reduce) {
+      const id = window.requestAnimationFrame(() => finish(true));
+      return () => window.cancelAnimationFrame(id);
     }
-    // First visit this session: reveal at the hero (top) behind the preloader.
+
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
     window.scrollTo(0, 0);
     document.body.style.overflow = "hidden";
-    let cancelled = false;
-    let raf = 0;
-
-    const run = async () => {
-      // Wait for fonts (with timeout so we never block indefinitely)
-      await Promise.race([
-        document.fonts.ready,
-        new Promise<void>((res) => setTimeout(res, 600)),
-      ]);
-      if (cancelled) return;
-
-      const canvas = canvasRef.current;
-      const ctx    = canvas?.getContext("2d");
-      if (!canvas || !ctx) return;
-
-      // Dimensions can resolve to 0 very early in mount; never let them be 0 or
-      // getImageData() throws an IndexSizeError and the loader hangs on black.
-      const rect = canvas.parentElement?.getBoundingClientRect();
-      const W = (canvas.width  = Math.max(1, Math.round(rect?.width  || window.innerWidth  || window.screen?.width  || 1280)));
-      const H = (canvas.height = Math.max(1, Math.round(rect?.height || window.innerHeight || window.screen?.height || 720)));
-
-      // ── Sample pixel positions of the real Perimystic wordmark ───────────────────
-      const LOGO_CY = 0.42; // vertical centre of the logo (shared with the glow)
-      const off    = document.createElement("canvas");
-      off.width = W; off.height = H;
-      const oct    = off.getContext("2d")!;
-      drawPerimysticLogo(oct, W, H, { widthFrac: W > H ? 0.42 : 0.78, cy: LOGO_CY, color: "#ffffff" });
-
-      const imgData = oct.getImageData(0, 0, W, H);
-      const pixels: [number, number][] = [];
-      const step = Math.max(2, Math.floor(W / 230));
-      for (let y = 0; y < H; y += step) {
-        for (let x = 0; x < W; x += step) {
-          if (imgData.data[(y * W + x) * 4 + 3] > 90) pixels.push([x, y]);
-        }
-      }
-      pixels.sort(() => Math.random() - 0.5);
-
-      const N = Math.min(1100, pixels.length);
-      type Pt = { x: number; y: number; tx: number; ty: number; r: number; spd: number; isRed: boolean };
-      const pts: Pt[] = [];
-      for (let i = 0; i < N; i++) {
-        // Start above or below the screen for a dramatic fly-in
-        const fromTop = Math.random() < 0.5;
-        pts.push({
-          x: Math.random() * W,
-          y: fromTop ? -Math.random() * H * 0.4 : H + Math.random() * H * 0.4,
-          tx: pixels[i]?.[0] ?? W / 2,
-          ty: pixels[i]?.[1] ?? H / 2,
-          r:  Math.random() * 1.8 + 0.85,
-          spd: 0.016 + Math.random() * 0.028,
-          isRed: Math.random() < 0.09,
-        });
-      }
-
-      // Background star field (static + twinkle)
-      type Star = { x: number; y: number; r: number; ph: number };
-      const stars: Star[] = Array.from({ length: 320 }, () => ({
-        x:  Math.random() * W,
-        y:  Math.random() * H,
-        r:  Math.random() * 1.0 + 0.12,
-        ph: Math.random() * Math.PI * 2,
-      }));
-
-      const TOTAL = 3.2; // seconds to form
-      let startTs = 0;
-      let t = 0;
-
-      ctx.fillStyle = "#000";
-      ctx.fillRect(0, 0, W, H);
-
-      const draw = (now: number) => {
-        if (cancelled) return;
-        if (!startTs) startTs = now;
-        t = (now - startTs) / 1000; // real elapsed seconds — frame-rate independent
-        const prog = Math.min(1, t / TOTAL);
-        setProgress(Math.round(prog * 100));
-
-        // Trail fade instead of full clear for comet effect
-        ctx.fillStyle = "rgba(0,0,0,0.2)";
-        ctx.fillRect(0, 0, W, H);
-
-        // Background stars
-        for (const s of stars) {
-          const a = 0.12 + 0.65 * (0.5 + 0.5 * Math.sin(t * 1.7 + s.ph));
-          ctx.fillStyle = `rgba(255,255,255,${a.toFixed(3)})`;
-          ctx.beginPath();
-          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-          ctx.fill();
-        }
-
-        // Particles converging into PERIMYSTIC
-        const ease = Math.min(1, prog * 1.4);
-        ctx.shadowBlur = 0;
-
-        for (const p of pts) {
-          p.x += (p.tx - p.x) * p.spd * ease;
-          p.y += (p.ty - p.y) * p.spd * ease;
-
-          const alpha = 0.18 + ease * 0.82;
-
-          if (p.isRed) {
-            ctx.shadowBlur   = prog > 0.4 ? 12 : 0;
-            ctx.shadowColor  = "rgba(232,39,30,1)";
-            ctx.fillStyle    = `rgba(232,39,30,${alpha.toFixed(3)})`;
-          } else {
-            ctx.shadowBlur = 0;
-            ctx.fillStyle  = `rgba(242,242,242,${alpha.toFixed(3)})`;
-          }
-
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.shadowBlur = 0;
-
-        // Red nebula glow forms behind the wordmark as it assembles
-        if (prog > 0.52) {
-          const ga   = ((prog - 0.52) / 0.48) * 0.16;
-          const gy   = H * LOGO_CY;
-          const grd  = ctx.createRadialGradient(W / 2, gy, 0, W / 2, gy, W * 0.32);
-          grd.addColorStop(0, `rgba(232,39,30,${ga.toFixed(3)})`);
-          grd.addColorStop(1, "rgba(0,0,0,0)");
-          ctx.fillStyle = grd;
-          ctx.fillRect(0, 0, W, H);
-        }
-
-        if (prog >= 1 && phaseRef.current === "forming") {
-          setPhase("ready");
-          phaseRef.current = "ready";
-          document.body.style.overflow = "";
-        }
-        // Keep animating after assembly: particles stay pinned at their targets
-        // so the comet-trails fade out into a crisp wordmark, and the background
-        // stars keep twinkling under "SCROLL TO ENTER". Stops on unmount.
-        raf = requestAnimationFrame(draw);
-      };
-
-      raf = requestAnimationFrame(draw);
-    };
-
-    // If anything in setup throws (e.g. a 0-size canvas), never strand the user
-    // on a black screen — drop straight to the "scroll to enter" state.
-    run().catch((err) => {
-      console.warn("Preloader setup failed, entering site:", err);
-      if (cancelled) return;
-      setProgress(100);
-      setPhase("ready");
-      phaseRef.current = "ready";
-      document.body.style.overflow = "";
-    });
-
-    return () => {
-      cancelled = true;
-      cancelAnimationFrame(raf);
-      document.body.style.overflow = "";
-    };
-  }, [onDone]);
-
-  // Tap / click / keyboard to enter. Wheel scroll is intentionally ignored so
-  // the reveal starts cleanly at the hero instead of carrying scroll momentum.
-  useEffect(() => {
-    if (phase !== "ready") return;
-
-    const dismiss = () => {
-      if (phaseRef.current !== "ready") return;
-      phaseRef.current = "exiting";
-      setPhase("exiting");
-      // Remember the intro played so reloads / back don't replay it this session,
-      // and re-enable native scroll restoration for those subsequent loads.
-      try { sessionStorage.setItem("perimystic:intro", "1"); } catch { /* ignore */ }
-      if ("scrollRestoration" in history) history.scrollRestoration = "auto";
-      // Pin to the hero so the reveal always starts at the top (the dismiss
-      // wheel/scroll must not carry the page down into another section).
-      window.scrollTo(0, 0);
-      // Reveal the site under the starfield, then let the loader collapse into
-      // the same cosmic language as the hero instead of sliding away.
-      setTimeout(() => onDone(false), 180);
-      setTimeout(() => setVisible(false), 1180);
-    };
-
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        dismiss();
+    const introTimer = window.setTimeout(() => finish(false), 1750);
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape" || event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        finish(true);
       }
     };
-
-    window.addEventListener("pointerdown", dismiss, { once: true, passive: true });
     window.addEventListener("keydown", onKey);
     return () => {
-      window.removeEventListener("pointerdown", dismiss);
+      window.clearTimeout(introTimer);
       window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
     };
-  }, [phase, onDone]);
+  }, [finish]);
+
+  useEffect(() => () => {
+    if (finishTimer.current !== null) window.clearTimeout(finishTimer.current);
+    document.body.style.overflow = "";
+  }, []);
 
   if (!visible) return null;
 
   return (
-    <div className={`preloader preloader--${phase}`} aria-hidden="true">
-      <canvas ref={canvasRef} className="preloader-canvas" />
-      <div className="preloader-stage">
-        {phase === "ready" && (
-          <div className="preloader-enter">
-            <span className="preloader-enter-label">TAP / ENTER</span>
-            <span className="preloader-enter-arrow">+</span>
-          </div>
-        )}
+    <div className={`preloader peri-opening ${exiting ? "peri-opening--exiting" : ""}`}
+      role="dialog" aria-label="Perimystic opening animation" aria-modal="true">
+      <div className="peri-opening-frame" aria-hidden="true">
+        <span className="peri-opening-corner peri-opening-corner--tl">✥</span>
+        <span className="peri-opening-corner peri-opening-corner--tr">✥</span>
+        <span className="peri-opening-corner peri-opening-corner--bl">✥</span>
+        <span className="peri-opening-corner peri-opening-corner--br">✥</span>
       </div>
-      <div className="preloader-meta">
-        <span>Rang jam raha hai</span>
-        <strong>{String(progress).padStart(3, "0")}</strong>
+      <div className="peri-opening-content">
+        <p className="peri-opening-eyebrow">रणनीति <span aria-hidden="true">✦</span> परिणाम</p>
+        <div className="peri-opening-reveal"><LogoMark className="peri-opening-logo" /></div>
+        <div className="peri-opening-rule" aria-hidden="true"><span>✣</span></div>
+        <p className="peri-opening-subtitle">Insight <span>◆</span> Strategy <span>◆</span> Impact</p>
       </div>
-      <div className="preloader-bar" style={{ "--p": `${progress}%` } as React.CSSProperties} />
+      <button className="peri-opening-skip" type="button"
+        onClick={() => finish(true)} aria-label="Skip introduction">
+        Skip intro <ArrowRight size={15} />
+      </button>
+      <div className="peri-opening-progress" aria-hidden="true" />
     </div>
   );
 }
@@ -611,7 +466,7 @@ function Hero() {
       <div className="hero-inner">
         <p className="hero-kicker">✦ Indian at heart · Creative by nature ✦</p>
         <div className="hero-view" aria-hidden="true">
-          <div className="hero-display-mark"><span>PERI</span><span>MYSTIC</span></div>
+          <LogoMark className="hero-brand-artwork" />
         </div>
         <h1 className="hero-tagline">
           Good brands don&apos;t whisper. <em>They make a scene.</em>
@@ -1297,7 +1152,7 @@ export default function PerimysticExperience() {
     }
 
     return () => {
-      ScrollTrigger.getAll().forEach((t) => t.kill());
+      ScrollTrigger.getAll().forEach((t) => { if (t.trigger && appRef.current?.contains(t.trigger)) t.kill(); });
       if (lenis) { gsap.ticker.remove(raf); lenis.destroy(); }
     };
   }, [siteReady]);
