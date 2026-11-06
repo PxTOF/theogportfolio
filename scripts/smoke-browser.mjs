@@ -35,6 +35,8 @@ try {
       assert.equal(response?.status(), 200, `Homepage should return HTTP 200: ${test.name}`);
       await page.waitForSelector(".cinematic-hero", { timeout: 10000 });
       await page.waitForFunction(() => document.querySelector(".preloader") === null, null, { timeout: 9000 });
+      // The desktop intro copy has a short GSAP reveal; snapshot settled UI.
+      await page.waitForTimeout(test.width > 900 ? 900 : 150);
 
       assert.equal(await page.locator(".cinematic-slide").count(), 3, "All three showcase films should exist");
       assert.equal(await page.locator(".cinematic-slide h1").count(), 1, "Hero should have exactly one H1");
@@ -57,6 +59,21 @@ try {
         scrollWidth: document.documentElement.scrollWidth,
       }));
       assert.ok(extent.scrollWidth <= extent.window + 3, `Horizontal overflow: ${JSON.stringify(extent)}`);
+      const heroFit = await page.locator('.cinematic-slide[data-idx="0"]').evaluate((root) => {
+        const heading = root.querySelector("h1");
+        const cta = root.querySelector(".cinematic-primary-cta");
+        const foot = root.querySelector(".cinematic-slide-foot");
+        if (!heading || !cta || !foot) return null;
+        const h = heading.getBoundingClientRect();
+        const c = cta.getBoundingClientRect();
+        const f = foot.getBoundingClientRect();
+        return { headingTop: h.top, headingBottom: h.bottom, ctaBottom: c.bottom, footTop: f.top,
+          headingOpacity: Number(getComputedStyle(heading).opacity) };
+      });
+      assert.ok(heroFit, "Opening hero elements should be present");
+      assert.ok(heroFit.headingTop > 85, `Hero heading must clear the nav: ${JSON.stringify(heroFit)}`);
+      assert.ok(heroFit.ctaBottom < heroFit.footTop - 7, `Hero CTA must not overlap the film credits: ${JSON.stringify(heroFit)}`);
+      assert.ok(heroFit.headingOpacity > .9, `Hero text must be visible after the intro: ${JSON.stringify(heroFit)}`);
 
       if (test.width <= 900) {
         const inertSlides = await page.locator(".cinematic-slide[inert]").count();
