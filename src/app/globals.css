@@ -1,18 +1,23 @@
-/* ─── Design tokens: RED · BLACK · WHITE only ─────────────────────────────── */
+/* Original animation foundation; Perimystic art-direction skin follows below. */
 :root {
-  --white:      #f2f2f2;
-  --white-soft: rgba(242, 242, 242, 0.70);
-  --white-faint:rgba(242, 242, 242, 0.12);
-  --black:      #050505;
-  --black-deep: #000000;
-  --red:        #e8271e;
-  --red-dark:   #8f150e;
-  --red-glow:   rgba(232, 39, 30, 0.55);
-  --muted:      rgba(242, 242, 242, 0.45);
-  --line:       rgba(242, 242, 242, 0.14);
-  /* Shared reel grade — mutes clashing hues so every video reads in-palette. */
-  --reel-grade: saturate(0.7) contrast(1.06) brightness(0.9);
-  --font-sans:  var(--font-body), Arial, sans-serif;
+  --white: #fff4ce;
+  --white-soft: rgba(255, 244, 206, 0.82);
+  --white-faint: rgba(255, 244, 206, 0.16);
+  --black: #142b76;
+  --black-deep: #132b78;
+  --red: #f03934;
+  --red-dark: #a31630;
+  --red-glow: rgba(240, 57, 52, 0.45);
+  --muted: rgba(255, 244, 206, 0.62);
+  --line: rgba(255, 244, 206, 0.22);
+  --cobalt: #1646b5;
+  --pink: #ff57a8;
+  --saffron: #ffd333;
+  --turquoise: #24b9ac;
+  --cream: #fff2c3;
+  --ink: #163387;
+  --reel-grade: saturate(1.02) contrast(1.03) brightness(0.91);
+  --font-sans: var(--font-body), Arial, sans-serif;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1296,4 +1301,557 @@ textarea.contact-input { resize: vertical; min-height: 84px; }
     scroll-behavior: auto !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* ==========================================================================
+   PERIMYSTIC  —  hand-painted Indian street graphics / truck-art edition
+   This is a visual skin over the original Snag interaction/animation system.
+   No third-party reference images are copied into the site.
+   ========================================================================== */
+
+:root { color-scheme: light; }
+html, body { background: var(--saffron); }
+body { color: var(--ink); }
+::selection { background: var(--pink); color: var(--ink); }
+.app-root { isolation: isolate; }
+.app-root main { position: relative; z-index: 2; }
+.grain { opacity: .15; mix-blend-mode: multiply; }
+.cinema { opacity: .22; }
+.webgl-layer { opacity: .14; mix-blend-mode: screen; }
+.cosmos {
+  opacity: .35;
+  background: var(--saffron);
+}
+.cosmos-stars, .cosmos-neb, .cosmos-constellation { opacity: .16; }
+.cursor-dot { background: var(--cobalt); }
+.cursor-ring { border-color: var(--red); }
+.cursor-grow .cursor-ring { background: var(--saffron); }
+
+/* LOADING: an opening title card instead of the old monochrome universe. */
+.preloader {
+  background:
+    radial-gradient(circle at 50% 45%, rgba(255,230,91,.24), transparent 60%),
+    linear-gradient(115deg, #1b3dae 0%, #12327d 100%);
+  color: var(--cream);
+}
+.preloader::before {
+  background: radial-gradient(circle, rgba(255,219,49,.52), transparent 56%);
+}
+.preloader::after {
+  background:
+    linear-gradient(90deg, transparent, rgba(255,214,53,.75), transparent),
+    repeating-linear-gradient(0deg, transparent 0 14px, rgba(255,81,147,.14) 15px, transparent 17px);
+}
+.preloader-enter {
+  border: 3px solid var(--saffron);
+  border-radius: 8px;
+  background: #e72d43;
+  box-shadow: 8px 8px 0 #ff77b3;
+}
+.preloader-enter-label { color: #fff5cd; text-shadow: 2px 2px 0 #1543ae; }
+.preloader-enter-arrow { border: 3px solid #1543ae; color: var(--red); background: var(--saffron); }
+.preloader-meta strong { color: var(--saffron); }
+.preloader-bar { height: 7px; background: var(--pink); box-shadow: none; }
+
+/* THE BIG SIGNBOARD: vintage paint, punchy shapes, optimistic colour. */
+.hero {
+  isolation: isolate;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 50% 33%, #fff19c 0 11%, transparent 47%),
+    radial-gradient(circle at 5% 84%, rgba(250,86,137,.52), transparent 27%),
+    radial-gradient(circle at 95% 15%, rgba(43,174,183,.40), transparent 29%),
+    repeating-linear-gradient(116deg, transparent 0 17px, rgba(209,78,29,.06) 18px 19px),
+    #ffd22b;
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: clamp(24px, 4.5vw, 64px) clamp(10px, 2vw, 34px);
+  border: clamp(7px, 1vw, 15px) double var(--red);
+  border-radius: 22% 22% 4% 4% / 9% 9% 3% 3%;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 5px var(--cobalt), 0 0 0 5px var(--turquoise);
+}
+.hero::after {
+  content: "✦  HORN OK PLEASE  ✦  GOOD IDEAS AHEAD  ✦";
+  position: absolute;
+  bottom: clamp(5rem, 8vw, 6rem);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  white-space: nowrap;
+  color: var(--ink);
+  font: 800 clamp(.58rem, .85vw, .8rem) var(--font-mono);
+  letter-spacing: .19em;
+  text-align: center;
+}
+.hero-shade {
+  background: repeating-radial-gradient(circle at 50% 50%, rgba(23,70,165,.04) 0 1px, transparent 1px 18px);
+  opacity: .65;
+}
+.hero-border {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  right: 0;
+  height: clamp(18px, 3.2vw, 48px);
+  background-image: url('/assets/ornaments/truck-art-strip.svg');
+  background-size: auto 100%;
+  background-repeat: repeat-x;
+  pointer-events: none;
+}
+.hero-border--top { top: 0; }
+.hero-border--bottom { bottom: 0; transform: rotate(180deg); }
+.hero-corner {
+  position: absolute;
+  z-index: 2;
+  top: 43%;
+  transform: translateY(-50%);
+  font-family: Georgia, serif;
+  font-size: clamp(3rem, 10vw, 11rem);
+  line-height: 1;
+  color: var(--pink);
+  -webkit-text-stroke: 2px var(--ink);
+  text-shadow: 5px 7px 0 #ffd333;
+  pointer-events: none;
+  animation: peri-wobble 8s ease-in-out infinite alternate;
+}
+.hero-corner--left { left: 3.5vw; }
+.hero-corner--right { right: 3.5vw; animation-delay: -4s; }
+@keyframes peri-wobble { from { rotate: -12deg; } to { rotate: 12deg; } }
+.hero-inner {
+  padding: clamp(6rem, 10vw, 10rem) clamp(2rem, 5vw, 5rem);
+  max-width: 1440px;
+  gap: clamp(.5rem, 1.8vw, 1.6rem);
+}
+.hero-kicker {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  font-size: clamp(.65rem, 1.1vw, .91rem);
+  letter-spacing: .21em;
+  color: var(--red-dark);
+  background: #fff1b9;
+  border: 2px solid var(--red);
+  border-radius: 100px;
+  padding: .65rem 1.1rem;
+  box-shadow: 4px 4px 0 var(--turquoise);
+}
+.hero-view {
+  width: min(87vw, 970px);
+  height: auto;
+  min-height: clamp(210px, 33vw, 410px);
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
+  overflow: visible;
+}
+.hero-display-mark {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  transform: rotate(-3deg);
+  filter: drop-shadow(0 15px 0 rgba(171,23,52,.20));
+}
+.hero-display-mark span,
+.perimystic-mark > span {
+  display: block;
+  font: 900 clamp(6rem, 15vw, 15rem)/.75 Impact, "Arial Black", sans-serif;
+  font-stretch: condensed;
+  letter-spacing: -.035em;
+  text-transform: uppercase;
+  color: var(--red);
+  -webkit-text-stroke: clamp(2px, .5vw, 7px) var(--ink);
+  paint-order: stroke fill;
+  text-shadow: 5px 5px 0 #fff4c9, 11px 11px 0 #1d9b9f, 16px 16px 0 #f146a3;
+}
+.hero-display-mark span:nth-child(2) { color: #f74999; transform: translateX(4%) rotate(1deg); }
+.hero-display-mark::before, .hero-display-mark::after {
+  content: "✺";
+  position: absolute;
+  top: 46%;
+  font-size: clamp(2rem, 6vw, 5rem);
+  color: #2c9c9a;
+  -webkit-text-stroke: 2px var(--ink);
+}
+.hero-display-mark::before { left: 0; transform: rotate(-20deg); }
+.hero-display-mark::after { right: 0; transform: rotate(20deg); color: var(--red); }
+.hero-tagline {
+  max-width: 30ch;
+  font-family: var(--font-body), Arial, sans-serif;
+  font-size: clamp(1.1rem, 2.2vw, 2.4rem);
+  font-weight: 900;
+  line-height: 1.12;
+  text-transform: none;
+  color: var(--ink);
+  letter-spacing: -.04em;
+  text-wrap: balance;
+}
+.hero-tagline em { color: var(--red-dark); font-style: italic; }
+.hero-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.1rem;
+  background: var(--ink);
+  color: var(--cream);
+  border: 3px solid var(--red);
+  border-radius: 100px;
+  padding: .9rem 1.5rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: .84rem;
+  letter-spacing: .035em;
+  box-shadow: 5px 6px 0 var(--pink);
+  transition: transform .3s ease, box-shadow .3s ease;
+  position: relative;
+  z-index: 3;
+}
+.hero-action:hover { transform: translateY(-3px); box-shadow: 6px 9px 0 var(--turquoise); }
+.hero-card {
+  z-index: 3;
+  left: clamp(2rem, 5vw, 5.5rem);
+  bottom: clamp(5rem, 10vw, 7rem);
+  min-width: 200px;
+  width: min(20vw, 280px);
+  border: 3px solid #203b94;
+  border-radius: 6px;
+  transform: rotate(-5deg);
+  background: #e73c42;
+  color: var(--cream);
+  box-shadow: 6px 7px 0 #ff76ae, inset 0 0 0 3px #ffda38;
+  backdrop-filter: none;
+}
+.hero-card-eyebrow { color: var(--saffron); font-weight: 700; letter-spacing: .05em; }
+.hero-card-body { color: var(--cream); font-size: .88rem; font-weight: 700; }
+.hero-scroll { color: var(--ink); bottom: 2.7rem; }
+.hero-scroll-line { background: linear-gradient(var(--ink), transparent); }
+
+/* Main bands: a slightly chaotic but intentional poster-wall palette. */
+.section-label {
+  background: var(--saffron);
+  color: var(--ink);
+  padding: .48rem 1rem;
+  border: 2px solid var(--ink);
+  border-radius: 40px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  box-shadow: 3px 4px 0 var(--pink);
+}
+.section-label::before { background: var(--red); box-shadow: none; }
+.section-label::after { background: var(--red); }
+.attention-model {
+  background:
+    radial-gradient(circle at 18% 30%, rgba(245,67,116,.27), transparent 24%),
+    radial-gradient(circle at 80% 72%, rgba(60,210,180,.17), transparent 28%),
+    #143a9a;
+  color: var(--cream);
+  border-top: 14px solid var(--red);
+  border-bottom: 14px solid var(--turquoise);
+}
+.attention-model::after {
+  content: "";
+  position: absolute;
+  inset: 20px;
+  border: 4px double #ffce3e;
+  border-radius: 35px;
+  opacity: .72;
+  pointer-events: none;
+}
+.model-title h2 {
+  max-width: 1000px;
+  color: #ffdd48;
+  font-family: Impact, var(--font-display), sans-serif;
+  line-height: .96;
+  letter-spacing: .005em;
+  -webkit-text-stroke: 2px #f15aa0;
+  text-shadow: 7px 8px 0 #a41e40;
+}
+.model-title > p:last-child { max-width: 660px; color: var(--cream); }
+.signal-wave { opacity: .28; filter: none; }
+.feature-grid {
+  gap: clamp(.7rem, 1.6vw, 1.5rem);
+  border: 0;
+  background: transparent;
+}
+.feature-card {
+  min-height: 305px;
+  border: 4px solid #ffcb34;
+  border-radius: 8px;
+  background: #feebaf;
+  color: var(--ink);
+  box-shadow: 8px 8px 0 #f15394, inset 0 0 0 4px #d12f4a;
+}
+.feature-card:nth-child(2) { background: #ffc8df; box-shadow: 8px 8px 0 #43c6b5, inset 0 0 0 4px #d12f4a; }
+.feature-card:nth-child(3) { background: #b5eddd; box-shadow: 8px 8px 0 #f8d342, inset 0 0 0 4px #d12f4a; }
+.feature-card:hover { background: #fff0b7; }
+.feature-top, .feature-card > p { color: var(--ink); }
+.feature-card strong { color: var(--red); text-shadow: 3px 4px 0 #ffbe43; }
+.feature-icon { background: var(--red); border: 3px solid var(--ink); }
+.feature-icon::after { content: "✺"; display: grid; place-items: center; height: 100%; color: var(--cream); font: 900 2rem Georgia, serif; }
+
+/* Full bleed video storytelling with the retro-signboard frame. */
+.proof-slides { border-top: 18px solid #ffd333; border-bottom: 18px solid #f24e92; }
+.proof-slide::after {
+  content: "";
+  position: absolute;
+  inset: clamp(18px,3vw,45px);
+  border: 5px double #ffca30;
+  box-shadow: inset 0 0 0 5px #f44278;
+  border-radius: 15px 15px 65px 65px;
+  pointer-events: none;
+}
+.proof-copy { position: relative; z-index: 1; }
+.proof-copy h2 { color: #fff1c9; text-shadow: 4px 6px 0 #cb3155; }
+.proof-copy p { color: #ffe145; }
+.proof-chip div { background: var(--saffron); border: 3px solid var(--red); }
+.proof-chip b { border-left: 2px solid var(--ink); }
+
+/* Archive cards stay interactive/video-first, but sit on a punchier painted band. */
+.work-product {
+  background:
+    repeating-linear-gradient(135deg, rgba(174,28,77,.06) 0 2px, transparent 2px 25px),
+    #fa598c;
+  border-top: 16px solid var(--saffron);
+  border-bottom: 14px solid var(--ink);
+  color: var(--ink);
+}
+.work-intro h2 {
+  color: var(--cream);
+  letter-spacing: .01em;
+  text-shadow: 5px 7px 0 var(--red-dark), 9px 11px 0 #142f92;
+}
+.work-intro > p:last-child, .work-intro-cue { color: var(--ink); font-weight: 700; }
+.cards-section {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255,240,183,.65), transparent 55%),
+    repeating-linear-gradient(90deg, rgba(242,70,131,.12) 0 4px, transparent 4px 52px),
+    #ffbd2c;
+}
+.project-card {
+  border: 5px solid #15399c;
+  border-radius: 12px;
+  box-shadow: 9px 11px 0 #ec3763, 0 32px 70px rgba(0,0,0,.25);
+}
+.project-card:hover { box-shadow: 12px 14px 0 #33beb3, 0 35px 75px rgba(0,0,0,.2); }
+.project-card-frame {
+  inset: 7px; border-radius: 5px;
+  box-shadow: inset 0 0 0 3px #ffd52e !important;
+}
+.project-index { color: #ffdf35; text-shadow: 3px 3px 0 var(--red); }
+.project-status { color: var(--cream); }
+.project-category, .project-result span { color: #ffdb38; }
+.project-card h3 { text-shadow: 3px 4px 0 #a51a3a; }
+.project-tags span { border: 2px solid #f4b52f; color: var(--cream); }
+
+/* Festive marquee with painted lettering instead of a corporate ticker. */
+.marquee-sec {
+  background: #eb3a35;
+  border-top: 16px solid #2ea9a7;
+  border-bottom: 16px solid #ffd63b;
+}
+.marquee-sec::after {
+  content: "";
+  position: absolute;
+  top: 0; right: 0; left: 0;
+  height: 27px;
+  background: url('/assets/ornaments/truck-art-strip.svg') repeat-x center/auto 27px;
+  pointer-events: none;
+}
+.marquee-head h2 {
+  color: var(--saffron);
+  text-shadow: 4px 5px 0 var(--ink);
+}
+.marquee-head h2 em { color: var(--cream); }
+.marquee-sub { color: var(--cream); font-weight: 700; }
+.marquee-word {
+  color: var(--saffron);
+  font-weight: 900;
+  text-shadow: 4px 5px 0 var(--ink);
+}
+.marquee-word i { color: var(--turquoise); }
+.marquee-word--ghost { -webkit-text-stroke: 2px var(--cream); }
+
+/* Cream editorial area: the contrast provides room for actual conversion copy. */
+.open-proof {
+  background:
+    radial-gradient(circle at 95% 8%, rgba(246,83,151,.21), transparent 22%),
+    radial-gradient(circle at 3% 96%, rgba(45,185,170,.16), transparent 26%),
+    repeating-linear-gradient(0deg, transparent 0 48px, rgba(20,52,135,.035) 49px, transparent 50px),
+    var(--cream);
+  color: var(--ink);
+  border-bottom: 18px solid var(--red);
+}
+.open-proof-title { color: var(--ink); }
+.open-proof-title em { color: var(--red); }
+.manifesto-lead > p,
+.manifesto-sign,
+.manifesto-points p,
+.manifesto-points strong,
+.capabilities-intro { color: var(--ink); }
+.manifesto-points li { border-top: 3px solid var(--red); }
+.mp-index { color: var(--red); font-weight: 900; }
+.manifesto-sign span { color: var(--red); }
+.latest-reel-glow { background: radial-gradient(circle, rgba(250,47,134,.4), transparent 64%); }
+.latest-reel-inner { border: 5px solid var(--ink); box-shadow: 8px 8px 0 var(--red); }
+.capabilities-title { color: var(--ink); }
+.capabilities-label { color: var(--red-dark); font-weight: 800; }
+.service-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.2rem; }
+.service-card {
+  min-height: 315px;
+  border: 4px double var(--ink);
+  border-radius: 4px;
+  background: #ffcfdc;
+  box-shadow: 8px 9px 0 var(--red);
+  padding: clamp(1.3rem, 2vw, 2rem);
+}
+.service-card:nth-child(2) { background: #c4e8de; box-shadow: 8px 9px 0 var(--cobalt); }
+.service-card:nth-child(3) { background: #ffe279; box-shadow: 8px 9px 0 var(--pink); }
+.service-card:hover {
+  background: var(--saffron);
+  border-color: var(--red);
+  transform: translateY(-6px) rotate(-1deg);
+}
+.service-icon {
+  background: var(--red);
+  color: var(--cream);
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  box-shadow: 3px 3px 0 var(--saffron);
+}
+.service-card h4 { color: var(--ink); font-size: clamp(1.7rem, 2.25vw, 2.7rem); }
+.service-card p { color: var(--ink); font-weight: 600; font-size: .96rem; }
+
+/* Invitation: A dramatic but readable final conversion section. */
+.contact {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(249,120,184,.22), transparent 40%),
+    #163d99;
+  color: var(--cream);
+  border-top: 15px solid var(--saffron);
+}
+.contact::before {
+  content: "";
+  position: absolute;
+  inset: 20px;
+  border: 5px double #ffcf31;
+  border-radius: 20px 20px 100px 100px;
+  pointer-events: none;
+}
+.contact-aura { background: radial-gradient(circle, rgba(255,196,39,.32), transparent 70%); }
+.contact-kicker, .contact-cta-kicker { color: var(--saffron); }
+.footer-punch h2 { color: var(--saffron); text-shadow: 4px 6px 0 #e9345c; }
+.footer-punch h2 em { color: var(--pink); text-shadow: 4px 5px 0 var(--saffron); }
+.contact-flex, .contact-flex em { color: var(--cream); }
+.contact-console {
+  border: 4px solid var(--saffron);
+  border-radius: 14px;
+  box-shadow: 9px 11px 0 var(--pink);
+  background:
+    repeating-linear-gradient(45deg, rgba(25,71,173,.05) 0 8px, transparent 9px 21px),
+    #e83c4e;
+}
+.contact-console::before { background: linear-gradient(90deg, var(--saffron),var(--turquoise),var(--saffron)); }
+.contact-cta-btn {
+  background: var(--saffron);
+  border: 3px solid var(--ink);
+  color: var(--ink);
+  border-radius: 6px;
+  font-weight: 800;
+  box-shadow: 5px 5px 0 var(--turquoise);
+}
+.contact-cta-btn:hover { background: var(--cream); color: var(--ink); box-shadow: 7px 7px 0 var(--cobalt); }
+.contact-channels a, .contact-cta-note { color: var(--cream); }
+.contact-input { background: var(--cream); color: var(--ink); border: 2px solid var(--ink); border-radius: 4px; }
+.contact-input::placeholder { color: #6072a3; }
+.contact-input:focus { background: white; box-shadow: 4px 4px 0 var(--turquoise); }
+.site-footer {
+  background: #eb3c42;
+  color: var(--cream);
+  border-top: 23px solid #ffd639;
+  border-image: none;
+}
+.site-footer::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0; height: 25px;
+  background: url('/assets/ornaments/truck-art-strip.svg') repeat-x center/auto 25px;
+}
+.footer-back, .footer-loc, .footer-links a, .footer-credits { color: var(--cream); }
+.footer-links a:hover { color: var(--saffron); }
+.footer-mark { width: min(90vw, 760px); }
+.perimystic-mark {
+  position: relative;
+  display: grid;
+  place-items: center;
+  max-width: 100%;
+  isolation: isolate;
+  font-size: 1rem;
+}
+.perimystic-mark > span {
+  position: relative;
+  font-size: clamp(4rem, 12vw, 10rem);
+  line-height: .76;
+  -webkit-text-stroke: clamp(2px,.35vw,5px) var(--ink);
+  text-shadow: 4px 5px 0 var(--cream), 9px 10px 0 var(--turquoise);
+}
+.perimystic-mark > span:nth-child(2) { color: var(--saffron); }
+.perimystic-mark i {
+  position: absolute; top: -6%; right: 8%;
+  color: var(--saffron);
+  font-size: clamp(2rem, 4vw, 5rem);
+  transform: rotate(-14deg);
+}
+.audio-toggle { background: var(--red); color: var(--cream); border: 2px solid var(--saffron); }
+.audio-toggle:hover { border-color: var(--cream); }
+.audio-toggle[data-on="true"] { border-color: var(--saffron); }
+.audio-eq i { background: var(--cream); }
+
+@media (max-width: 1024px) {
+  .hero-corner { opacity: .55; }
+  .hero-card { display: none; }
+  .service-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .service-card { min-height: 280px; }
+  .model-title h2 { font-size: clamp(3.6rem, 10.5vw, 8rem); }
+}
+@media (max-width: 900px) {
+  .hero { min-height: 100svh; }
+  .hero::before { inset: 32px 10px 34px; border-width: 7px; }
+  .hero-inner { padding: 5rem 2rem 6rem; }
+  .hero-view { width: min(83vw, 620px); min-height: clamp(190px, 42vw, 350px); }
+  .hero-display-mark span { font-size: clamp(5rem, 16vw, 9rem); }
+  .hero-corner { display: none; }
+  .hero::after { font-size: .55rem; letter-spacing: .035em; bottom: 4rem; }
+  .service-grid { grid-template-columns: 1fr; }
+  .feature-grid { grid-template-columns: 1fr; padding: 0 1rem; }
+  .feature-card { min-height: 220px; }
+  .latest-reel { display: none; }
+  .attention-model::after, .contact::before { inset: 10px; }
+  .work-intro h2 { font-size: clamp(3rem, 12vw, 6rem); }
+}
+@media (max-width: 540px) {
+  .hero-inner { padding: 5rem 1.6rem 6rem; }
+  .hero-view { width: 100%; min-height: clamp(150px, 44vw, 245px); }
+  .hero-display-mark span { font-size: clamp(4.1rem, 20vw, 6.5rem); -webkit-text-stroke: 3px var(--ink); text-shadow: 3px 3px 0 var(--cream), 6px 7px 0 var(--turquoise); }
+  .hero-display-mark::before, .hero-display-mark::after { display: none; }
+  .hero-kicker { max-width: 75vw; text-align: center; font-size: .54rem; letter-spacing: .1em; }
+  .hero-tagline { font-size: 1.2rem; max-width: 24ch; }
+  .hero-action { font-size: .68rem; padding: .65rem .8rem; gap: .4rem; }
+  .hero::after { font-size: .46rem; max-width: 82vw; overflow: hidden; }
+  .hero-border { height: 19px; }
+  .section-label { font-size: .68rem; }
+  .model-title h2 { font-size: clamp(3.3rem, 14vw, 5rem); -webkit-text-stroke: 1px #f15aa0; }
+  .proof-slide::after { inset: 12px; border-width: 3px; }
+  .work-intro h2 { font-size: clamp(2.8rem, 13vw, 5.2rem); }
+  .marquee-word { font-size: clamp(2.5rem, 11vw, 5rem); }
+  .footer-punch h2 { font-size: clamp(2.7rem, 10vw, 4rem); }
+  .perimystic-mark > span { font-size: clamp(3.5rem, 14vw, 6rem); }
+  .contact-console { border-width: 2px; box-shadow: 5px 7px 0 var(--pink); }
+  .contact { padding-left: 1rem; padding-right: 1rem; }
+  .contact-cta-btn { width: 100%; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-corner { animation: none; }
 }
