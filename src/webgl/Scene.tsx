@@ -6,11 +6,11 @@ import { Suspense, useEffect, useRef, useState, type RefObject } from "react";
 import * as THREE from "three";
 import { useDomSync } from "./track";
 import { HeroBackground, HeroParticles } from "./HeroBackground";
-import { drawSnagLogo, SNAG_LOGO_VIEWBOX } from "@/lib/logo";
+import { drawPerimysticLogo, PERIMYSTIC_LOGO_VIEWBOX } from "@/lib/logo";
 import Effects from "./Effects";
 
-// ─── SNAG logo rendered as an ink/star particle cloud ─────────────────────────
-// The real Snag wordmark is rasterised to an offscreen canvas, its opaque pixels
+// ─── PERIMYSTIC logo rendered as an ink/star particle cloud ─────────────────────────
+// The real Perimystic wordmark is rasterised to an offscreen canvas, its opaque pixels
 // are sampled into a thin 3D slab of star-particles, and the cloud rests as the
 // legible wordmark, scattering away from the cursor then springing back.
 // (Sampling text — not the GLB — guarantees crisp, readable letterforms.)
@@ -21,16 +21,16 @@ type LogoData = { geometry: THREE.BufferGeometry; origPos: Float32Array; half: {
 const _ray = new THREE.Vector3();
 const _hit = new THREE.Vector3();
 
-function buildSnagGeometry(maxParticles = 4200): LogoData | null {
+function buildPerimysticGeometry(maxParticles = 4200): LogoData | null {
   const Wc = 1024;
-  const Hc = Math.round((Wc * SNAG_LOGO_VIEWBOX.h) / SNAG_LOGO_VIEWBOX.w);
+  const Hc = Math.round((Wc * PERIMYSTIC_LOGO_VIEWBOX.h) / PERIMYSTIC_LOGO_VIEWBOX.w);
   const canvas = document.createElement("canvas");
   canvas.width = Wc; canvas.height = Hc;
   const ctx = canvas.getContext("2d");
   if (!ctx) return null;
 
-  // Rasterise the real Snag wordmark so the particles form the actual logo.
-  drawSnagLogo(ctx, Wc, Hc, { widthFrac: 0.96, color: "#ffffff" });
+  // Rasterise the real Perimystic wordmark so the particles form the actual logo.
+  drawPerimysticLogo(ctx, Wc, Hc, { widthFrac: 0.96, color: "#ffffff" });
 
   const data = ctx.getImageData(0, 0, Wc, Hc).data;
   const pts: [number, number][] = [];
@@ -171,7 +171,7 @@ function HeroParticleLogo({ maxParticles = 4200 }: { maxParticles?: number }) {
   const halfSizeRef  = useRef({ x: 0.5, y: 0.18 });
   // stirRef: movement "energy" that rises as the cursor moves and decays when
   // still, so the wordmark only scatters when you actively sweep through it and
-  // re-forms to a clean SNAG at rest (also avoids the resting-centre blowout).
+  // re-forms to a clean PERIMYSTIC at rest (also avoids the resting-centre blowout).
   const stirRef      = useRef(0);
   const lastPointer  = useRef(new THREE.Vector2(0, 0));
 
@@ -188,7 +188,7 @@ function HeroParticleLogo({ maxParticles = 4200 }: { maxParticles?: number }) {
         await Promise.race([document.fonts.ready, new Promise<void>((r) => setTimeout(r, 800))]);
       } catch { /* ignore */ }
       if (cancelled) return;
-      built = buildSnagGeometry(maxParticles);
+      built = buildPerimysticGeometry(maxParticles);
       if (!built || cancelled) return;
       origPosRef.current  = built.origPos;
       halfSizeRef.current = built.half;
