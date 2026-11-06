@@ -15,7 +15,7 @@ export default function OpengraphImage() {
       <div style={{
         display: "flex", flexDirection: "column", justifyContent: "center",
         alignItems: "center", width: "100%", height: "100%",
-        border: "7px double #a84324", position: "relative",
+        border: "7px solid #a84324", position: "relative",
       }}>
         <div style={{ display: "flex", fontSize: 21, letterSpacing: 6, color: "#9a4327" }}>
           CREATIVE MARKETING AGENCY
