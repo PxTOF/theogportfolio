@@ -564,11 +564,11 @@ function ProofSlides() {
           <div className="proof-copy cinematic-copy">
             <p className="cinematic-eyebrow">{slide.eyebrow}</p>
             {i === 0 ? (
-              <h1>GOOD BRANDS DON&apos;T WHISPER. <em>THEY MAKE A SCENE.</em></h1>
+              <h1>GOOD BRANDS <em>MAKE A SCENE.</em></h1>
             ) : (
               <h2>{slide.title}</h2>
             )}
-            <span>{slide.copy}</span>
+            <span>{i === 0 ? "We turn ideas into stories people notice. Social, creators and campaigns with real character." : slide.copy}</span>
             <div className="cinematic-actions">
               <a href="#contact" className="cinematic-primary-cta">
                 BUILD WITH US <ArrowRight size={17} />
@@ -868,44 +868,6 @@ function OpenWeightProof() {
 
 // Mute-by-default ambient space audio. The file is a short loop in /public,
 // and playback only starts after the user explicitly taps the corner toggle.
-function AudioToggle() {
-  const ref = useRef<HTMLAudioElement>(null);
-  const [on, setOn] = useState(false);
-
-  const toggle = async () => {
-    const a = ref.current;
-    if (!a) return;
-    if (on) {
-      a.pause();
-      setOn(false);
-    } else {
-      a.volume = 0.32;
-      try {
-        await a.play();
-        setOn(true);
-      } catch {
-        setOn(false);
-      }
-    }
-  };
-
-  return (
-    <>
-      <audio ref={ref} src="/assets/audio/snag-ambient.wav" loop preload="none" />
-      <button
-        type="button"
-        className="audio-toggle"
-        data-on={on}
-        onClick={toggle}
-        aria-label={on ? "Turn ambient sound off" : "Turn ambient sound on"}
-      >
-        {on ? <Volume2 size={14} /> : <VolumeX size={14} />}
-        <span className="audio-eq" aria-hidden="true"><i /><i /><i /><i /></span>
-      </button>
-    </>
-  );
-}
-
 // ─── Root component ────────────────────────────────────────────────────────────
 
 export default function PerimysticExperience() {
@@ -1148,11 +1110,13 @@ export default function PerimysticExperience() {
           .to(stars, { autoAlpha: 0.18, duration: 0.5, ease: "power2.out" }, 1.1);
       }
 
-      // Warm title reveal over the opening reel, after the branded preloader.
-      gsap.from(".cinematic-hero-nav", { autoAlpha: 0, y: -16, duration: .7, ease: "power2.out" });
-      gsap.from('.cinematic-slide[data-idx="0"] .cinematic-copy > *', {
-        autoAlpha: 0, y: 28, duration: .8, stagger: .11, ease: "power3.out", delay: .15,
-      });
+      // Desktop only: avoid blank entrance frames on touchscreens and tablets.
+      if (!isMobile) {
+        gsap.from(".cinematic-hero-nav", { autoAlpha: 0, y: -16, duration: .6, ease: "power2.out" });
+        gsap.from('.cinematic-slide[data-idx="0"] .cinematic-copy > *', {
+          autoAlpha: 0, y: 20, duration: .65, stagger: .09, ease: "power3.out", delay: .05,
+        });
+      }
 
       // Stat count-up
       gsap.utils.toArray<HTMLElement>(".feature-card strong").forEach((el) => {
@@ -1214,7 +1178,6 @@ export default function PerimysticExperience() {
       <Preloader onDone={handlePreloaderDone} />
       <ScrollIndicator />
       <Cursor />
-      <AudioToggle />
       {/* Cinematic grade: vignette + in-palette lens bloom + drifting leak. */}
       <div className="cinema" aria-hidden="true" />
       <div className="grain" aria-hidden="true" />
