@@ -1,39 +1,37 @@
-# Perimystic — website design handover
+# Perimystic — working branch handover (6 November 2026)
 
-This branch transforms the original `theogportfolio` Next.js experience into the **Perimystic** creative marketing agency site using the visual references supplied on 6 November 2026.
+## Repository state
 
-## Creative direction
+- Repo: `PxTOF/theogportfolio`
+- Branch: `perimystic/desi-maximalist-rebrand`
+- Review: draft pull request #1. **Do not merge to `main` without approval.**
+- Vercel branch deployment is connected; GitHub Actions checks lint, TypeScript and build.
+- Founder work belongs to earlier employers/freelance engagements, **not** Perimystic clients.
 
-- **Visual language:** hand-painted Indian truck-art and retro street-sign lettering, decorative borders, saturated poster colours, playful Hindi/English phrasing.
-- **Palette:** saffron yellow `#FFD333`, cobalt `#1646B5`, chilli red `#F03934`, pink `#FF57A8`, turquoise `#24B9AC`, warm cream `#FFF2C3`.
-- **What stays:** original GSAP/ScrollTrigger, Lenis, WebGL, animated preloader, horizontal work slider, video case studies, reduced-motion behaviour, core responsive structure.
-- **New original artwork:** `public/assets/ornaments/truck-art-strip.svg`, `public/icon.svg`. Reference Pinterest imagery is not copied into the site.
+## Work applied in this iteration
 
-## Files to edit
+1. Replaced the old 3.2-second, black-screen starfield and mandatory click-to-enter with a parchment signboard intro. Automatic ~1.75-second play plus ~0.42-second reveal; skip button and keyboard support; session-only once; reduced-motion bypass; scroll lock released.
+2. Reworked site palette around parchment (`#f0dfba`), terracotta (`#a64021`), dark forest teal (`#193f33`) and muted brass. Rebalanced hero, sections, projects, contact and footer.
+3. Removed fake Impact/canvas/WebGL wordmark and GPU-heavy logo particle simulation. Ambient WebGL is retained only as subtle background; phones skip heavier effects.
+4. Added shared `LogoMark` image slot. When `NEXT_PUBLIC_PERIMYSTIC_LOGO_SRC` is set to a valid supplied image (ideally `/assets/branding/perimystic-logo.png`), the **actual official logo** replaces the temporary *plain typographic label* in preloader, hero and footer. The temporary label is **not** claimed as the original logo.
+5. Scoped GSAP animations and ScrollTrigger teardown; removed DOM-mutating SplitType wrappers and uncleaned attention hover listeners. Horizontal card scroll now recalculates overflow on ScrollTrigger refresh.
+6. Disabled an unverified Instagram URL rather than sending visitors to an account that may not belong to the agency. Contact CTAs are only activated when official social details or a working form are configured.
+7. Updated temporary editorial favicon, Open Graph card and browser theme to the heritage palette. Replace the favicon with the approved monogram once supplied.
 
-- `src/components/PerimysticExperience.tsx`: interactive site content, section composition, custom cursor, scrolling and intro.
-- `src/app/globals.css`: existing CSS and final Perimystic design-skin overrides.
-- `src/lib/content.ts`: brand and founder-experience projects, plus three flagship offers.
-- `src/lib/logo.ts`: canvas-drawn text mark used by particle intro.
-- `src/webgl/Scene.tsx`: WebGL logo and effects.
-- `src/app/layout.tsx`: SEO, metadata and icon.
-- `src/app/opengraph-image.tsx`: social share artwork.
+## Inputs needed from the owner
 
-## Important accuracy and launch tasks
+- **Original standalone Perimystic logo image** (the square vintage signboard image attached in the prior ChatGPT conversation). Prefer PNG at full resolution; do not regenerate or trace its typography. Add to `public/assets/branding/perimystic-logo.png` and configure `NEXT_PUBLIC_PERIMYSTIC_LOGO_SRC=/assets/branding/perimystic-logo.png` in Vercel. Crop/transparent variants only after inspecting the real source.
+- **Verified official Instagram handle/link** and business email. Once confirmed, configure `NEXT_PUBLIC_PERIMYSTIC_INSTAGRAM_URL` and `NEXT_PUBLIC_PERIMYSTIC_INSTAGRAM_LABEL`; add official email and tested lead handling.
+- Final domain (configure `NEXT_PUBLIC_SITE_URL`) and approval of founder-work/media rights.
 
-1. **Founder examples are not Perimystic clients.** The work section explicitly credits the founder's previous roles and freelance experience. Confirm the exact ownership, licensed media and performance claims before going live.
-2. **Verify Instagram handle** in `src/lib/content.ts`; `@perimystic` is a provisional contact target and must be checked before launch.
-3. **Set an official business email** and then implement verified lead handling. This branch intentionally removed the old studio's phone numbers, locations, old Instagram feed ID, and an unused legacy contact API route.
-4. If using a Google Apps Script contact form, create a Perimystic-specific endpoint, set `NEXT_PUBLIC_PERIMYSTIC_SHEET_FORM_URL` on Vercel, and test end-to-end. Without it, the CTA links to the Instagram target. Existing client-side no-cors submission cannot verify server acceptance, so use a verified form handler before launch.
-5. If using the latest Instagram post module, set `NEXT_PUBLIC_PERIMYSTIC_BEHOLD_FEED_ID`. Never reuse the previous studio's feed ID.
-6. Set `NEXT_PUBLIC_SITE_URL` to the final Perimystic domain after deployment.
-7. Validate on 375px, 768px, 1440px and reduced-motion; run `npm run lint`, `npx tsc --noEmit`, `npm run build`.
-8. The old local ambient audio filename and historical media files are preserved for now to avoid breaking existing interactions. Replace or remove assets as appropriate after verifying usage and rights.
+## Tests and acceptance
 
-## Tech
+The existing GitHub Actions workflow runs `npm run lint`, `npx tsc --noEmit` and `npm run build` on each push. A successful Vercel build is necessary but **not a visual browser test**.
 
-Next.js 16, React 19, TypeScript, GSAP, Lenis, React Three Fiber, Three.js.
+Still require a live desktop/mobile run at 375px / 768px / 1440px and with reduced motion. Check browser console/network; intro startup and auto-exit; keyboard skip; repeat visit; GSAP pin transitions; Lenis smooth scrolling; horizontal cards on resize; video posters and playback; WebGL loss/fallback; contact link, form submission and responsive clipping. Capture screenshots and iterate before merging.
 
-## Deployment
+## Brand/business constraints
 
-The original `main` branch is untouched. This design lives on `perimystic/desi-maximalist-rebrand`. Create/inspect a preview build before merging into `main`; do not deploy to production without reviewing claims and validating contact links.
+Core offers: Social & Content; Creator Campaigns; Brand Launches. Do not carry over Snag phone numbers, mailboxes, addresses or social-feed IDs. Previous work (SuperProfile, Burger Bae, Depano, Body Juices, Barber Syndicate) remains explicitly founder experience.
+
+Do not turn on the Google Apps Script form without a tested Perimystic-only endpoint (`NEXT_PUBLIC_PERIMYSTIC_SHEET_FORM_URL`). The old no-cors client-side submission could not prove successful delivery. Verify any feed integration through `NEXT_PUBLIC_PERIMYSTIC_BEHOLD_FEED_ID` before activation.
