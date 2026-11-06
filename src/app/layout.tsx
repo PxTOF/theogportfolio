@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: "PERIMYSTIC", description: SITE_DESC },
 };
 
-export const viewport: Viewport = { themeColor: "#16225A" };
+export const viewport: Viewport = { themeColor: "#f0dfba" };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
