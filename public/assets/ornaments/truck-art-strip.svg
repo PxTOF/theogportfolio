@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="48" viewBox="0 0 240 48">
+<rect width="240" height="48" fill="#e93b31"/>
+<path d="M0 5H240M0 43H240" stroke="#ffd32a" stroke-width="6"/>
+<path d="M0 12H240M0 36H240" stroke="#133fad" stroke-width="3"/>
+<g transform="translate(24 24)">
+<path d="M0 -13C6 -6 6 6 0 13C-6 6 -6 -6 0 -13Z" fill="#ffd52a"/>
+<path d="M-13 0C-6 -6 6 -6 13 0C6 6 -6 6 -13 0Z" fill="#ff83bb"/>
+<circle r="5" fill="#153fa9"/><circle r="2" fill="#fff4d1"/>
+</g>
+<g transform="translate(72 24)">
+<path d="M0 -14 5 -5 14 0 5 5 0 14 -5 5 -14 0 -5 -5Z" fill="#1bd0b2" stroke="#ffd52a" stroke-width="2"/>
+<circle r="4" fill="#fb3c86"/>
+</g>
+<g transform="translate(120 24)">
+<path d="M0 -13C6 -6 6 6 0 13C-6 6 -6 -6 0 -13Z" fill="#ffd52a"/>
+<path d="M-13 0C-6 -6 6 -6 13 0C6 6 -6 6 -13 0Z" fill="#ff83bb"/>
+<circle r="5" fill="#153fa9"/><circle r="2" fill="#fff4d1"/>
+</g>
+<g transform="translate(168 24)">
+<path d="M0 -14 5 -5 14 0 5 5 0 14 -5 5 -14 0 -5 -5Z" fill="#1bd0b2" stroke="#ffd52a" stroke-width="2"/>
+<circle r="4" fill="#fb3c86"/>
+</g>
+<g transform="translate(216 24)">
+<path d="M0 -13C6 -6 6 6 0 13C-6 6 -6 -6 0 -13Z" fill="#ffd52a"/>
+<path d="M-13 0C-6 -6 6 -6 13 0C6 6 -6 6 -13 0Z" fill="#ff83bb"/>
+<circle r="5" fill="#153fa9"/><circle r="2" fill="#fff4d1"/>
+</g>
+</svg>
